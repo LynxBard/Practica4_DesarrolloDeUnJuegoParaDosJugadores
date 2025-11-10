@@ -1,21 +1,4 @@
 package com.example.practica4_juegopara2jugadores.model
-/**
- * Representa un jugador en el juego
- */
-enum class Player {
-    RED,
-    YELLOW;
-
-    fun other(): Player = if (this == RED) YELLOW else RED
-}
-
-/**
- * Representa el contenido de una celda en el tablero
- */
-sealed class Cell {
-    object Empty : Cell()
-    data class Occupied(val player: Player) : Cell()
-}
 
 /**
  * Representa el estado actual del juego
