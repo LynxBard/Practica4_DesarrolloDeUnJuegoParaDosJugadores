@@ -187,7 +187,7 @@ fun GameBoard(
             for (row in 0 until GameState.ROWS) {
                 Row {
                     for (col in 0 until GameState.COLUMNS) {
-                        Cell(
+                        CellView(
                             cell = gameState.board[row][col],
                             isWinningCell = gameState.winningCells.contains(Pair(row, col)),
                             isLastMove = gameState.lastMove == Pair(row, col),
@@ -205,29 +205,29 @@ fun GameBoard(
 }
 
 @Composable
-fun Cell(
+fun CellView(
     cell: Cell,
     isWinningCell: Boolean,
     isLastMove: Boolean,
     onClick: () -> Unit
 ) {
-    var visible by remember { mutableStateOf(false) }
-
-    LaunchedEffect(cell) {
-        if (cell is Cell.Occupied) {
-            visible = false
-            kotlinx.coroutines.delay(50)
-            visible = true
-        }
-    }
-
     val scale by animateFloatAsState(
         targetValue = if (isWinningCell) 1.2f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
-        )
+        ),
+        label = "winning_scale"
     )
+
+    // Determinar el color de la celda
+    val cellColor = when (cell) {
+        is Cell.Empty -> EmptyCell
+        is Cell.Occupied -> when (cell.player) {
+            Player.RED -> RedPlayer
+            Player.YELLOW -> YellowPlayer
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -236,29 +236,15 @@ fun Cell(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        AnimatedVisibility(
-            visible = visible || cell is Cell.Empty,
-            enter = fadeIn() + scaleIn(),
-            exit = fadeOut() + scaleOut()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .scale(scale)
-                    .clip(CircleShape)
-                    .background(
-                        when (cell) {
-                            is Cell.Empty -> EmptyCell
-                            is Cell.Occupied -> if (cell.player == Player.RED) RedPlayer else YellowPlayer
-                        }
-                    )
-                    .then(
-                        if (isLastMove && cell is Cell.Occupied) {
-                            Modifier.shadow(4.dp, CircleShape)
-                        } else Modifier
-                    )
-            )
-        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    if (isWinningCell) Modifier.scale(scale) else Modifier
+                )
+                .clip(CircleShape)
+                .background(cellColor)
+        )
     }
 }
 
