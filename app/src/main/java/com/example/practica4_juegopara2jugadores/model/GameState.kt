@@ -11,7 +11,11 @@ data class GameState(
     val winningCells: List<Pair<Int, Int>> = emptyList(),
     val redWins: Int = 0,
     val yellowWins: Int = 0,
-    val lastMove: Pair<Int, Int>? = null
+    val lastMove: Pair<Int, Int>? = null,
+    val gameMode: GameMode,
+    val gameStartTime: Long,
+    val moveHistory: List<Move>,
+    val elapsedTimeSeconds: Int
 ) {
     companion object {
         const val ROWS = 6
