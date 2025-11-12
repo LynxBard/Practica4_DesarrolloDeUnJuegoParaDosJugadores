@@ -12,10 +12,10 @@ data class GameState(
     val redWins: Int = 0,
     val yellowWins: Int = 0,
     val lastMove: Pair<Int, Int>? = null,
-    val gameMode: GameMode,
-    val gameStartTime: Long,
-    val moveHistory: List<Move>,
-    val elapsedTimeSeconds: Int
+    val gameMode: GameMode = GameMode.LOCAL_MULTIPLAYER,
+    val gameStartTime: Long = System.currentTimeMillis(),
+    val moveHistory: List<Move> = emptyList(),
+    val elapsedTimeSeconds: Int = 0
 ) {
     companion object {
         const val ROWS = 6

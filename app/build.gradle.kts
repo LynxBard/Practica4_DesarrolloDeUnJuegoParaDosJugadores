@@ -64,6 +64,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    // Material Icons
+    implementation("androidx.compose.material:material-icons-extended:1.6.8") // Or a newer version
 
     // ViewModel is not in your TOML, you can add it or declare it directly
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
