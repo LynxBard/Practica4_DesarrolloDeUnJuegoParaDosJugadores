@@ -1,0 +1,447 @@
+package com.example.practica4_juegopara2jugadores.ui.screens
+
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.practica4_juegopara2jugadores.domain.ai.Difficulty
+import com.example.practica4_juegopara2jugadores.ui.BoardBlue
+import com.example.practica4_juegopara2jugadores.ui.RedPlayer
+import com.example.practica4_juegopara2jugadores.ui.YellowPlayer
+import kotlinx.coroutines.delay
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AIConfigScreen(
+    onStartGame: (difficulty: Difficulty, playerGoesFirst: Boolean) -> Unit,
+    onBack: () -> Unit
+) {
+    var selectedDifficulty by remember { mutableStateOf(Difficulty.MEDIUM) }
+    var playerGoesFirst by remember { mutableStateOf(true) }
+    var contentVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(100)
+        contentVisible = true
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        "Configurar IA",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = BoardBlue,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                )
+            )
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            BoardBlue.copy(alpha = 0.05f),
+                            Color.White
+                        )
+                    )
+                )
+        ) {
+            AnimatedVisibility(
+                visible = contentVisible,
+                enter = fadeIn(animationSpec = tween(400)) +
+                        slideInVertically(
+                            initialOffsetY = { it / 4 },
+                            animationSpec = tween(400)
+                        )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    // Título decorativo
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(vertical = 16.dp)
+                    ) {
+                        Text(
+                            text = "🤖",
+                            fontSize = 64.sp,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Text(
+                            text = "Configura tu rival",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BoardBlue
+                        )
+                    }
+
+                    // Card de Dificultad
+                    DifficultyCard(
+                        selectedDifficulty = selectedDifficulty,
+                        onDifficultySelected = { selectedDifficulty = it }
+                    )
+
+                    // Card de Orden de Juego
+                    TurnOrderCard(
+                        playerGoesFirst = playerGoesFirst,
+                        onToggle = { playerGoesFirst = it }
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    // Botón de inicio
+                    StartGameButton(
+                        onClick = {
+                            onStartGame(selectedDifficulty, playerGoesFirst)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DifficultyCard(
+    selectedDifficulty: Difficulty,
+    onDifficultySelected: (Difficulty) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp
+        ),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                Text(
+                    text = "⚙️",
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(
+                    text = "Dificultad",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = BoardBlue
+                )
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                DifficultyOption(
+                    difficulty = Difficulty.EASY,
+                    label = "Fácil",
+                    description = "Perfecto para principiantes",
+                    icon = "😊",
+                    selected = selectedDifficulty == Difficulty.EASY,
+                    onClick = { onDifficultySelected(Difficulty.EASY) }
+                )
+
+                DifficultyOption(
+                    difficulty = Difficulty.MEDIUM,
+                    label = "Medio",
+                    description = "Un desafío equilibrado",
+                    icon = "😐",
+                    selected = selectedDifficulty == Difficulty.MEDIUM,
+                    onClick = { onDifficultySelected(Difficulty.MEDIUM) }
+                )
+
+                DifficultyOption(
+                    difficulty = Difficulty.HARD,
+                    label = "Difícil",
+                    description = "Para expertos",
+                    icon = "😈",
+                    selected = selectedDifficulty == Difficulty.HARD,
+                    onClick = { onDifficultySelected(Difficulty.HARD) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DifficultyOption(
+    difficulty: Difficulty,
+    label: String,
+    description: String,
+    icon: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val scale by animateFloatAsState(
+        targetValue = if (selected) 1.02f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        )
+    )
+
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .scale(scale),
+        colors = CardDefaults.cardColors(
+            containerColor = if (selected) {
+                BoardBlue.copy(alpha = 0.1f)
+            } else {
+                Color(0xFFF5F5F5)
+            }
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = icon,
+                fontSize = 32.sp,
+                modifier = Modifier.padding(end = 16.dp)
+            )
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = label,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (selected) BoardBlue else Color.Black
+                )
+                Text(
+                    text = description,
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
+
+            RadioButton(
+                selected = selected,
+                onClick = onClick,
+                colors = RadioButtonDefaults.colors(
+                    selectedColor = BoardBlue
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun TurnOrderCard(
+    playerGoesFirst: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp
+        ),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                Text(
+                    text = "🎲",
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(
+                    text = "Orden de Juego",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = BoardBlue
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .background(
+                                    color = RedPlayer,
+                                    shape = RoundedCornerShape(50)
+                                )
+                        )
+                        Text(
+                            text = " Yo empiezo primero",
+                            fontSize = 16.sp,
+                            fontWeight = if (playerGoesFirst) FontWeight.Bold else FontWeight.Normal,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .background(
+                                    color = YellowPlayer,
+                                    shape = RoundedCornerShape(50)
+                                )
+                        )
+                        Text(
+                            text = " IA empieza primero",
+                            fontSize = 16.sp,
+                            fontWeight = if (!playerGoesFirst) FontWeight.Bold else FontWeight.Normal,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                }
+
+                Switch(
+                    checked = playerGoesFirst,
+                    onCheckedChange = onToggle,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = RedPlayer,
+                        checkedTrackColor = RedPlayer.copy(alpha = 0.5f),
+                        uncheckedThumbColor = YellowPlayer,
+                        uncheckedTrackColor = YellowPlayer.copy(alpha = 0.5f)
+                    )
+                )
+            }
+
+            Text(
+                text = if (playerGoesFirst) {
+                    "Tú (Rojo) comenzarás el juego"
+                } else {
+                    "La IA (Amarillo) comenzará el juego"
+                },
+                fontSize = 14.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun StartGameButton(onClick: () -> Unit) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        )
+    )
+
+    Button(
+        onClick = {
+            isPressed = true
+            onClick()
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .scale(scale),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = BoardBlue
+        ),
+        shape = RoundedCornerShape(16.dp),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 8.dp,
+            pressedElevation = 2.dp
+        )
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "🎮",
+                fontSize = 24.sp,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(
+                text = "Iniciar Juego",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            delay(100)
+            isPressed = false
+        }
+    }
+}

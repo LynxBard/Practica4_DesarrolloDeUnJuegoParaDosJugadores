@@ -1,6 +1,7 @@
 package com.example.practica4_juegopara2jugadores.viewmodel
 
 import androidx.lifecycle.ViewModel
+import com.example.practica4_juegopara2jugadores.domain.ai.Difficulty
 import com.example.practica4_juegopara2jugadores.navigation.Screen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +29,14 @@ class NavigationViewModel : ViewModel() {
         // Agregar la pantalla actual al stack antes de navegar
         navigationStack.add(_currentScreen.value)
         _currentScreen.value = screen
+    }
+
+    /**
+     * Navega a la pantalla de juego single player con configuración
+     */
+    fun navigateToSinglePlayerWithConfig(difficulty: Difficulty, playerGoesFirst: Boolean) {
+        navigationStack.add(_currentScreen.value)
+        _currentScreen.value = Screen.SinglePlayerGameWithConfig(difficulty, playerGoesFirst)
     }
 
     /**

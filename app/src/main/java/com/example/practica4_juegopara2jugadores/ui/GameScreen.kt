@@ -7,6 +7,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,11 +17,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.practica4_juegopara2jugadores.model.Cell
+import com.example.practica4_juegopara2jugadores.model.GameMode
 import com.example.practica4_juegopara2jugadores.model.GameState
 import com.example.practica4_juegopara2jugadores.model.Player
 import com.example.practica4_juegopara2jugadores.viewmodel.GameViewModel
@@ -31,59 +35,101 @@ val BoardBlue = Color(0xFF1976D2)
 val BackgroundColor = Color(0xFFF5F5F5)
 val EmptyCell = Color(0xFFFFFFFF)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(
-    viewModel: GameViewModel = viewModel()
+    viewModel: GameViewModel = viewModel(),
+    onBack: (() -> Unit)? = null,
+    showAIIndicator: Boolean = false
 ) {
     val gameState by viewModel.gameState.collectAsState()
+    val isAIThinking by viewModel.isAIThinking.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BackgroundColor)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Header con título
-        Text(
-            text = "Connect Four",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = BoardBlue,
-            modifier = Modifier.padding(vertical = 16.dp)
-        )
+    Scaffold(
+        topBar = {
+            if (onBack != null) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            "Connect Four",
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Volver"
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = BoardBlue,
+                        titleContentColor = Color.White,
+                        navigationIconContentColor = Color.White
+                    )
+                )
+            }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundColor)
+                .padding(paddingValues)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Header con título (solo si no hay TopAppBar)
+            if (onBack == null) {
+                Text(
+                    text = "Connect Four",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = BoardBlue,
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
+            }
 
-        // Indicador de turno y puntuación
-        ScoreBoard(gameState)
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Tablero de juego
-        GameBoard(
-            gameState = gameState,
-            onColumnClick = { column -> viewModel.makeMove(column) }
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Botones de control
-        ControlButtons(
-            onResetGame = { viewModel.resetGame() },
-            onResetAll = { viewModel.resetAll() }
-        )
-
-        // Diálogo de victoria/empate
-        if (gameState.isGameOver()) {
-            WinnerDialog(
+            // Indicador de turno y puntuación
+            ScoreBoard(
                 gameState = gameState,
-                onNewGame = { viewModel.resetGame() }
+                isAIThinking = isAIThinking && showAIIndicator
             )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Tablero de juego
+            GameBoard(
+                gameState = gameState,
+                onColumnClick = { column -> viewModel.makeMove(column) },
+                isInteractionEnabled = !isAIThinking
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Botones de control
+            ControlButtons(
+                onResetGame = { viewModel.resetGame() },
+                onResetAll = { viewModel.resetAll() }
+            )
+
+            // Diálogo de victoria/empate
+            if (gameState.isGameOver()) {
+                WinnerDialog(
+                    gameState = gameState,
+                    onNewGame = { viewModel.resetGame() }
+                )
+            }
         }
     }
 }
 
 @Composable
-fun ScoreBoard(gameState: GameState) {
+fun ScoreBoard(
+    gameState: GameState,
+    isAIThinking: Boolean = false
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -94,14 +140,18 @@ fun ScoreBoard(gameState: GameState) {
         PlayerScore(
             player = Player.RED,
             score = gameState.redWins,
-            isCurrentPlayer = gameState.currentPlayer == Player.RED && !gameState.isGameOver()
+            isCurrentPlayer = gameState.currentPlayer == Player.RED && !gameState.isGameOver(),
+            label = if (gameState.gameMode == GameMode.SINGLE_PLAYER) "Tú" else "Rojo",
+            isAIThinking = false
         )
 
         // Jugador Amarillo
         PlayerScore(
             player = Player.YELLOW,
             score = gameState.yellowWins,
-            isCurrentPlayer = gameState.currentPlayer == Player.YELLOW && !gameState.isGameOver()
+            isCurrentPlayer = gameState.currentPlayer == Player.YELLOW && !gameState.isGameOver(),
+            label = if (gameState.gameMode == GameMode.SINGLE_PLAYER) "IA" else "Amarillo",
+            isAIThinking = isAIThinking
         )
     }
 }
@@ -110,7 +160,9 @@ fun ScoreBoard(gameState: GameState) {
 fun PlayerScore(
     player: Player,
     score: Int,
-    isCurrentPlayer: Boolean
+    isCurrentPlayer: Boolean,
+    label: String,
+    isAIThinking: Boolean = false
 ) {
     val playerColor = if (player == Player.RED) RedPlayer else YellowPlayer
     val scale by animateFloatAsState(
@@ -119,6 +171,18 @@ fun PlayerScore(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
         )
+    )
+
+    // Animación de rotación para "pensando"
+    val infiniteTransition = rememberInfiniteTransition(label = "thinking")
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "rotation"
     )
 
     Card(
@@ -142,13 +206,24 @@ fun PlayerScore(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(playerColor)
-            )
+                    .background(playerColor),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isAIThinking) {
+                    Text(
+                        text = "🤔",
+                        fontSize = 20.sp,
+                        modifier = Modifier.graphicsLayer {
+                            rotationZ = rotation
+                        }
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = if (player == Player.RED) "Rojo" else "Amarillo",
+                text = label,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -161,7 +236,7 @@ fun PlayerScore(
 
             if (isCurrentPlayer) {
                 Text(
-                    text = "Tu turno",
+                    text = if (isAIThinking) "Pensando..." else "Tu turno",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = playerColor
@@ -174,7 +249,8 @@ fun PlayerScore(
 @Composable
 fun GameBoard(
     gameState: GameState,
-    onColumnClick: (Int) -> Unit
+    onColumnClick: (Int) -> Unit,
+    isInteractionEnabled: Boolean = true
 ) {
     Card(
         modifier = Modifier
@@ -192,7 +268,7 @@ fun GameBoard(
                             isWinningCell = gameState.winningCells.contains(Pair(row, col)),
                             isLastMove = gameState.lastMove == Pair(row, col),
                             onClick = {
-                                if (!gameState.isGameOver()) {
+                                if (isInteractionEnabled && !gameState.isGameOver()) {
                                     onColumnClick(col)
                                 }
                             }
@@ -291,7 +367,12 @@ fun WinnerDialog(
             ) {
                 if (!gameState.isDraw) {
                     val winnerColor = if (gameState.winner == Player.RED) RedPlayer else YellowPlayer
-                    val winnerName = if (gameState.winner == Player.RED) "Rojo" else "Amarillo"
+                    val winnerName = when {
+                        gameState.gameMode == GameMode.SINGLE_PLAYER && gameState.winner == Player.RED -> "¡Has ganado!"
+                        gameState.gameMode == GameMode.SINGLE_PLAYER && gameState.winner == Player.YELLOW -> "La IA ganó"
+                        gameState.winner == Player.RED -> "Rojo"
+                        else -> "Amarillo"
+                    }
 
                     Box(
                         modifier = Modifier
@@ -303,7 +384,11 @@ fun WinnerDialog(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "¡Gana el jugador $winnerName!",
+                        text = if (gameState.gameMode == GameMode.SINGLE_PLAYER) {
+                            winnerName
+                        } else {
+                            "¡Gana el jugador $winnerName!"
+                        },
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )

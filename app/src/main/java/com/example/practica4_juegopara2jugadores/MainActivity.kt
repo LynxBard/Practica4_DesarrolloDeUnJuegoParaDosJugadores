@@ -26,10 +26,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.practica4_juegopara2jugadores.domain.ai.ConnectFourAI
+import com.example.practica4_juegopara2jugadores.domain.ai.Difficulty
+import com.example.practica4_juegopara2jugadores.model.GameMode
+import com.example.practica4_juegopara2jugadores.model.Player
 import com.example.practica4_juegopara2jugadores.navigation.Screen
 import com.example.practica4_juegopara2jugadores.ui.GameScreen
+import com.example.practica4_juegopara2jugadores.ui.screens.AIConfigScreen
 import com.example.practica4_juegopara2jugadores.ui.screens.GameModeSelectionScreen
 import com.example.practica4_juegopara2jugadores.ui.screens.MainMenuScreen
 import com.example.practica4_juegopara2jugadores.ui.theme.ConnectFourTheme
@@ -60,8 +66,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ConnectFourApp(
-    navigationViewModel: NavigationViewModel = viewModel(),
-    gameViewModel: GameViewModel = viewModel()
+    navigationViewModel: NavigationViewModel = viewModel()
 ) {
     val currentScreen by navigationViewModel.currentScreen.collectAsState()
 
@@ -80,22 +85,49 @@ fun ConnectFourApp(
         }
 
         is Screen.LocalGame -> {
-            GameScreen(
-                viewModel = gameViewModel
-            )
-        }
+            val gameViewModel: GameViewModel = viewModel()
+            gameViewModel.setGameMode(GameMode.LOCAL_MULTIPLAYER)
 
-        is Screen.SinglePlayerGame -> {
-            // TODO: Implementar pantalla de juego vs IA
-            PlaceholderScreen(
-                title = "Modo 1 Jugador",
-                message = "Próximamente: Juego contra IA",
+            GameScreen(
+                viewModel = gameViewModel,
                 onBack = { navigationViewModel.navigateBack() }
             )
         }
 
+        is Screen.SinglePlayerGame -> {
+            // Mostrar pantalla de configuración de IA
+            AIConfigScreen(
+                onStartGame = { difficulty, playerGoesFirst ->
+                    // Crear el ViewModel con IA configurada
+                    val ai = ConnectFourAI(difficulty, Player.YELLOW)
+                    navigationViewModel.navigateToSinglePlayerWithConfig(difficulty, playerGoesFirst)
+                },
+                onBack = { navigationViewModel.navigateBack() }
+            )
+        }
+
+        is Screen.SinglePlayerGameWithConfig -> {
+            val config = (currentScreen as Screen.SinglePlayerGameWithConfig)
+
+            // Usar remember para mantener la IA y el ViewModel durante toda la sesión
+            val ai = remember(config.difficulty) {
+                ConnectFourAI(config.difficulty, Player.YELLOW)
+            }
+
+            val gameViewModel: GameViewModel = remember(config.difficulty, config.playerGoesFirst) {
+                GameViewModel(ai, config.playerGoesFirst).apply {
+                    setGameMode(GameMode.SINGLE_PLAYER)
+                }
+            }
+
+            GameScreen(
+                viewModel = gameViewModel,
+                onBack = { navigationViewModel.navigateBack() },
+                showAIIndicator = true
+            )
+        }
+
         is Screen.BluetoothSetup -> {
-            // TODO: Implementar configuración Bluetooth
             PlaceholderScreen(
                 title = "Configuración Bluetooth",
                 message = "Próximamente: Juego por Bluetooth",
@@ -104,7 +136,6 @@ fun ConnectFourApp(
         }
 
         is Screen.BluetoothGame -> {
-            // TODO: Implementar juego Bluetooth
             PlaceholderScreen(
                 title = "Juego Bluetooth",
                 message = "Partida en progreso...",
@@ -113,7 +144,6 @@ fun ConnectFourApp(
         }
 
         is Screen.SaveLoadMenu -> {
-            // TODO: Implementar menú de guardar/cargar
             PlaceholderScreen(
                 title = "Cargar Partida",
                 message = "Próximamente: Sistema de guardado",
@@ -123,9 +153,7 @@ fun ConnectFourApp(
     }
 }
 
-// En C:/Users/Public/Documents/moviles/Practica4_JuegoPara2Jugadores/app/src/main/java/com/example/practica4_juegopara2jugadores/MainActivity.kt
-
-@OptIn(ExperimentalMaterial3Api::class) // <-- Añade esta línea
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PlaceholderScreen(
     title: String,
