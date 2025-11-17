@@ -143,6 +143,21 @@ class GameViewModel(
     }
 
     /**
+     * Carga un estado de juego guardado
+     */
+    fun loadGameState(savedState: GameState) {
+        _gameState.value = savedState
+
+        // Si es un juego contra IA y es el turno de la IA, hacer el movimiento
+        if (savedState.gameMode == GameMode.SINGLE_PLAYER &&
+            savedState.currentPlayer == Player.YELLOW &&
+            !savedState.isGameOver() &&
+            ai != null) {
+            makeAIMove()
+        }
+    }
+
+    /**
      * Obtiene el estado actual del juego
      */
     fun getCurrentState(): GameState = _gameState.value

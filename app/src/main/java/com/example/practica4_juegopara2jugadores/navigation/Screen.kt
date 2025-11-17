@@ -1,6 +1,7 @@
 package com.example.practica4_juegopara2jugadores.navigation
 
 import com.example.practica4_juegopara2jugadores.domain.ai.Difficulty
+import com.example.practica4_juegopara2jugadores.model.GameState
 
 sealed class Screen {
     object MainMenu : Screen()
@@ -14,4 +15,5 @@ sealed class Screen {
     object BluetoothSetup : Screen()
     object BluetoothGame : Screen()
     object SaveLoadMenu : Screen()
+    data class LoadedGame(val gameState: GameState) : Screen()
 }

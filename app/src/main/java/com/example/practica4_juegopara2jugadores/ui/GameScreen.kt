@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,15 +19,22 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.practica4_juegopara2jugadores.data.GameSaveRepository
 import com.example.practica4_juegopara2jugadores.model.Cell
 import com.example.practica4_juegopara2jugadores.model.GameMode
 import com.example.practica4_juegopara2jugadores.model.GameState
 import com.example.practica4_juegopara2jugadores.model.Player
+import com.example.practica4_juegopara2jugadores.ui.screens.SaveGameScreen
 import com.example.practica4_juegopara2jugadores.viewmodel.GameViewModel
+import kotlinx.coroutines.launch
 
 // Colores del juego
 val RedPlayer = Color(0xFFE53935)
@@ -44,8 +52,15 @@ fun GameScreen(
 ) {
     val gameState by viewModel.gameState.collectAsState()
     val isAIThinking by viewModel.isAIThinking.collectAsState()
+    val context = LocalContext.current
+
+    // Estado para mostrar el diálogo de guardar
+    var showSaveDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             if (onBack != null) {
                 TopAppBar(
@@ -63,10 +78,23 @@ fun GameScreen(
                             )
                         }
                     },
+                    actions = {
+                        // Botón para guardar partida
+                        IconButton(
+                            onClick = { showSaveDialog = true }
+                        ) {
+                            Icon(
+                                Icons.Default.Save,
+                                contentDescription = "Guardar Partida",
+                                tint = Color.White
+                            )
+                        }
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = BoardBlue,
                         titleContentColor = Color.White,
-                        navigationIconContentColor = Color.White
+                        navigationIconContentColor = Color.White,
+                        actionIconContentColor = Color.White
                     )
                 )
             }
@@ -111,7 +139,8 @@ fun GameScreen(
             // Botones de control
             ControlButtons(
                 onResetGame = { viewModel.resetGame() },
-                onResetAll = { viewModel.resetAll() }
+                onResetAll = { viewModel.resetAll() },
+                onSaveGame = { showSaveDialog = true }
             )
 
             // Diálogo de victoria/empate
@@ -119,6 +148,39 @@ fun GameScreen(
                 WinnerDialog(
                     gameState = gameState,
                     onNewGame = { viewModel.resetGame() }
+                )
+            }
+        }
+    }
+
+    // Diálogo para guardar partida
+    if (showSaveDialog) {
+        Dialog(
+            onDismissRequest = { showSaveDialog = false },
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false
+            )
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(0.95f)
+                    .fillMaxHeight(0.85f),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                SaveGameScreen(
+                    gameState = gameState,
+                    repository = GameSaveRepository(context),
+                    onDismiss = { showSaveDialog = false },
+                    onSaveSuccess = { path ->
+                        showSaveDialog = false
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = "Partida guardada exitosamente",
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+                    }
                 )
             }
         }
@@ -327,22 +389,42 @@ fun CellView(
 @Composable
 fun ControlButtons(
     onResetGame: () -> Unit,
-    onResetAll: () -> Unit
+    onResetAll: () -> Unit,
+    onSaveGame: () -> Unit
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Button(
-            onClick = onResetGame,
-            colors = ButtonDefaults.buttonColors(containerColor = BoardBlue)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("Nueva Partida")
+            Button(
+                onClick = onResetGame,
+                colors = ButtonDefaults.buttonColors(containerColor = BoardBlue),
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Nueva Partida")
+            }
+
+            OutlinedButton(
+                onClick = onResetAll,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Reiniciar Todo")
+            }
         }
 
         OutlinedButton(
-            onClick = onResetAll
+            onClick = onSaveGame,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Reiniciar Todo")
+            Icon(
+                Icons.Default.Save,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Guardar Partida")
         }
     }
 }
