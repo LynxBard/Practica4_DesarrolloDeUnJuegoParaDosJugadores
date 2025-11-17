@@ -416,7 +416,7 @@ private fun generatePreviewContent(gameState: GameState, format: SaveFormat): St
             appendLine()
             appendLine("[BOARD]")
             saveData.boardState.take(3).forEachIndexed { idx, row ->
-                appendLine("Row$idx: ${row.joinToString(",")}")
+                appendLine("Row$idx: ${row.cells.joinToString(",")}")
             }
             appendLine("...")
         }
@@ -429,7 +429,11 @@ private fun generatePreviewContent(gameState: GameState, format: SaveFormat): St
             appendLine("  <RedWins>${saveData.redWins}</RedWins>")
             appendLine("  <YellowWins>${saveData.yellowWins}</YellowWins>")
             appendLine("  <BoardState>")
-            appendLine("    ...")
+            appendLine("    <Row>")
+            appendLine("      <Cells>")
+            appendLine("        ...")
+            appendLine("      </Cells>")
+            appendLine("    </Row>")
             appendLine("  </BoardState>")
             appendLine("</GameSave>")
         }
@@ -441,7 +445,9 @@ private fun generatePreviewContent(gameState: GameState, format: SaveFormat): St
             appendLine("  \"redWins\": ${saveData.redWins},")
             appendLine("  \"yellowWins\": ${saveData.yellowWins},")
             appendLine("  \"boardState\": [")
-            appendLine("    ...")
+            appendLine("    {")
+            appendLine("      \"cells\": [...]")
+            appendLine("    }")
             appendLine("  ]")
             appendLine("}")
         }
