@@ -12,61 +12,49 @@ import org.simpleframework.xml.Root
 @Root(name = "GameSave", strict = false)
 data class GameSaveData(
     @field:Element(name = "Timestamp")
-    @get:Element(name = "Timestamp")
     var timestamp: Long = 0L,
 
     @field:Element(name = "GameMode")
-    @get:Element(name = "GameMode")
     var gameMode: String = "",
 
     @field:ElementList(name = "BoardState", entry = "Row", inline = false)
-    @get:ElementList(name = "BoardState", entry = "Row", inline = false)
-    var boardState: List<BoardRow> = emptyList(),
+    var boardState: MutableList<BoardRow> = mutableListOf(),
 
     @field:Element(name = "CurrentPlayer")
-    @get:Element(name = "CurrentPlayer")
     var currentPlayer: String = "",
 
     @field:Element(name = "RedWins")
-    @get:Element(name = "RedWins")
     var redWins: Int = 0,
 
     @field:Element(name = "YellowWins")
-    @get:Element(name = "YellowWins")
     var yellowWins: Int = 0,
 
     @field:Element(name = "ElapsedTimeSeconds")
-    @get:Element(name = "ElapsedTimeSeconds")
     var elapsedTimeSeconds: Int = 0,
 
     @field:ElementList(name = "MoveHistory", entry = "Move", inline = false)
-    @get:ElementList(name = "MoveHistory", entry = "Move", inline = false)
-    var moveHistory: List<SavedMove> = emptyList(),
+    var moveHistory: MutableList<SavedMove> = mutableListOf(),
 
     @field:Element(name = "Winner", required = false)
-    @get:Element(name = "Winner", required = false)
     var winner: String? = null,
 
     @field:Element(name = "IsDraw")
-    @get:Element(name = "IsDraw")
     var isDraw: Boolean = false
 ) {
     // Constructor sin argumentos requerido por Simple XML
-    constructor() : this(0L, "", emptyList(), "", 0, 0, 0, emptyList(), null, false)
+    constructor() : this(0L, "", mutableListOf(), "", 0, 0, 0, mutableListOf(), null, false)
 }
 
 /**
  * Representa una fila del tablero para serialización XML
  */
-
 @Serializable
 @Root(name = "Row", strict = false)
 data class BoardRow(
     @field:ElementList(name = "Cells", entry = "Cell", inline = true)
-    @get:ElementList(name = "Cells", entry = "Cell", inline = true)
-    var cells: List<String> = emptyList()
+    var cells: MutableList<String> = mutableListOf()
 ) {
-    constructor() : this(emptyList())
+    constructor() : this(mutableListOf())
 }
 
 /**
@@ -76,25 +64,19 @@ data class BoardRow(
 @Root(name = "Move", strict = false)
 data class SavedMove(
     @field:Element(name = "Player")
-    @get:Element(name = "Player")
     var player: String = "",
 
     @field:Element(name = "Column")
-    @get:Element(name = "Column")
     var column: Int = 0,
 
     @field:Element(name = "Row")
-    @get:Element(name = "Row")
     var row: Int = 0,
 
     @field:Element(name = "Timestamp")
-    @get:Element(name = "Timestamp")
     var timestamp: Long = 0L
 ) {
     constructor() : this("", 0, 0, 0L)
 }
-
-
 
 /**
  * Información resumida de una partida guardada
@@ -131,9 +113,9 @@ fun GameState.toSaveData(): GameSaveData {
                         Player.YELLOW -> "YELLOW"
                     }
                 }
-            }
+            }.toMutableList()
         )
-    }
+    }.toMutableList()
 
     val savedMoves = moveHistory.map { move ->
         SavedMove(
@@ -142,7 +124,7 @@ fun GameState.toSaveData(): GameSaveData {
             row = move.row,
             timestamp = move.timestamp
         )
-    }
+    }.toMutableList()
 
     return GameSaveData(
         timestamp = System.currentTimeMillis(),

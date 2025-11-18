@@ -203,8 +203,8 @@ class GameSaveRepository(private val context: Context) {
 
         val boardState = sections["BOARD"]?.map { line ->
             val cells = line.substringAfter(": ").split(",")
-            BoardRow(cells)
-        } ?: emptyList()
+            BoardRow(cells.toMutableList())
+        }?.toMutableList() ?: mutableListOf()
 
         val moveHistory = sections["MOVES"]?.filter { it.startsWith("Move") }?.map { line ->
             val parts = line.substringAfter(": ").split(",")
@@ -214,7 +214,7 @@ class GameSaveRepository(private val context: Context) {
                 row = parts[2].toInt(),
                 timestamp = parts[3].toLong()
             )
-        } ?: emptyList()
+        }?.toMutableList() ?: mutableListOf()
 
         return GameSaveData(
             timestamp = metadata["Timestamp"]?.toLongOrNull() ?: 0L,
