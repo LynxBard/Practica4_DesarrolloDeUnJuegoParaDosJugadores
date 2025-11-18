@@ -24,7 +24,12 @@ class GameViewModel(
 ) : ViewModel() {
 
     // Estado privado mutable
-    private val _gameState = MutableStateFlow(GameState())
+    private val _gameState = MutableStateFlow(
+        // 🔧 FIX: Si la IA juega primero, el turno inicial debe ser YELLOW
+        GameState(
+            currentPlayer = if (ai != null && !playerGoesFirst) Player.YELLOW else Player.RED
+        )
+    )
 
     // Estado público inmutable
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
@@ -111,10 +116,13 @@ class GameViewModel(
      */
     fun resetGame() {
         val currentState = _gameState.value
-        val newState = GameLogic.resetGame(currentState)
+        val newState = GameLogic.resetGame(currentState).copy(
+            gameMode = currentState.gameMode,
+            // 🔧 FIX: Restablecer el turno inicial correcto
+            currentPlayer = if (ai != null && !playerGoesFirst) Player.YELLOW else Player.RED
+        )
 
-        // Mantener el modo de juego
-        _gameState.value = newState.copy(gameMode = currentState.gameMode)
+        _gameState.value = newState
 
         // Si la IA juega primero, hacer el primer movimiento
         if (ai != null && !playerGoesFirst && currentState.gameMode == GameMode.SINGLE_PLAYER) {
@@ -127,7 +135,11 @@ class GameViewModel(
      */
     fun resetAll() {
         val currentMode = _gameState.value.gameMode
-        _gameState.value = GameLogic.resetAll().copy(gameMode = currentMode)
+        _gameState.value = GameLogic.resetAll().copy(
+            gameMode = currentMode,
+            // 🔧 FIX: Restablecer el turno inicial correcto
+            currentPlayer = if (ai != null && !playerGoesFirst) Player.YELLOW else Player.RED
+        )
 
         // Si la IA juega primero, hacer el primer movimiento
         if (ai != null && !playerGoesFirst && currentMode == GameMode.SINGLE_PLAYER) {
