@@ -14,8 +14,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -125,7 +127,7 @@ fun BluetoothSetupScreen(
     // Navegar automáticamente cuando se establece conexión
     LaunchedEffect(connectionState) {
         if (connectionState is ConnectionState.Connected) {
-            delay(500) // Pequeño delay para mostrar la animación
+            delay(500)
             onConnectionEstablished((connectionState as ConnectionState.Connected).isHost)
         }
     }
@@ -168,11 +170,12 @@ fun BluetoothSetupScreen(
                     text = {
                         Text(
                             "Crear Partida",
-                            fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal
+                            fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 14.sp
                         )
                     },
                     icon = {
-                        Icon(Icons.Default.Create, contentDescription = null)
+                        Icon(Icons.Default.Create, contentDescription = null, modifier = Modifier.size(20.dp))
                     }
                 )
                 Tab(
@@ -181,11 +184,12 @@ fun BluetoothSetupScreen(
                     text = {
                         Text(
                             "Unirse",
-                            fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal
+                            fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 14.sp
                         )
                     },
                     icon = {
-                        Icon(Icons.Default.Search, contentDescription = null)
+                        Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(20.dp))
                     }
                 )
             }
@@ -267,9 +271,10 @@ private fun CreateGameTab(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // Icono decorativo
             AnimatedVisibility(
@@ -278,15 +283,15 @@ private fun CreateGameTab(
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(vertical = 16.dp)
+                    modifier = Modifier.padding(vertical = 12.dp)
                 ) {
                     Text(
                         text = "📱",
-                        fontSize = 64.sp
+                        fontSize = 56.sp
                     )
                     Text(
                         text = "Crear Nueva Partida",
-                        fontSize = 20.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = BoardBlue
                     )
@@ -300,20 +305,20 @@ private fun CreateGameTab(
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Default.Person,
                             contentDescription = null,
                             tint = BoardBlue,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(18.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             "Tu Nombre",
-                            fontSize = 16.sp,
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -322,10 +327,10 @@ private fun CreateGameTab(
                         value = hostName,
                         onValueChange = onHostNameChange,
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Ingresa tu nombre") },
+                        placeholder = { Text("Ingresa tu nombre", fontSize = 14.sp) },
                         singleLine = true,
                         leadingIcon = {
-                            Icon(Icons.Default.Edit, contentDescription = null)
+                            Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
                         }
                     )
                 }
@@ -334,19 +339,31 @@ private fun CreateGameTab(
             // Estado de conexión
             when (connectionState) {
                 is ConnectionState.Disconnected -> {
+                    // Instrucciones paso a paso (NUEVO)
+                    InstructionsCard(
+                        title = "📋 Instrucciones",
+                        steps = listOf(
+                            "1️⃣ Ingresa tu nombre arriba",
+                            "2️⃣ Presiona 'Hacer Visible'",
+                            "3️⃣ Espera en esta pantalla",
+                            "4️⃣ El otro jugador debe buscarte y conectarse"
+                        ),
+                        backgroundColor = BoardBlue.copy(alpha = 0.1f)
+                    )
+
                     // Botón para hacer visible
                     Button(
                         onClick = onMakeDiscoverable,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
+                            .height(54.dp),
                         enabled = hostName.isNotBlank(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = BoardBlue
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Icon(Icons.Default.Refresh, contentDescription = null)
+                        Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             "Hacer Visible",
@@ -356,7 +373,7 @@ private fun CreateGameTab(
                     }
 
                     Text(
-                        text = "Tu dispositivo será visible para otros jugadores durante 5 minutos",
+                        text = "Tu dispositivo será visible durante 5 minutos",
                         fontSize = 12.sp,
                         color = Color.Gray,
                         textAlign = TextAlign.Center,
@@ -391,20 +408,22 @@ private fun CreateGameTab(
                 )
             ) {
                 Row(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         Icons.Default.Info,
                         contentDescription = null,
-                        tint = YellowPlayer.copy(alpha = 0.7f)
+                        tint = YellowPlayer.copy(alpha = 0.7f),
+                        modifier = Modifier.size(20.dp)
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "Serás el anfitrión de la partida y jugarás con las fichas rojas",
-                        fontSize = 14.sp,
+                        text = "⚠️ NO SALGAS de esta pantalla hasta que el otro jugador se conecte",
+                        fontSize = 13.sp,
                         color = Color.DarkGray,
-                        lineHeight = 18.sp
+                        lineHeight = 17.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
@@ -438,10 +457,22 @@ private fun JoinGameTab(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            // Instrucciones importantes (NUEVO)
+            InstructionsCard(
+                title = "⚠️ Antes de buscar",
+                steps = listOf(
+                    "✅ El otro jugador debe estar en 'Crear Partida'",
+                    "✅ Debe haber presionado 'Hacer Visible'",
+                    "✅ Debe estar esperando en esa pantalla",
+                    "❌ Si no está esperando, la conexión FALLARÁ"
+                ),
+                backgroundColor = Color(0xFFFFECB3)
+            )
+
             // Botón de búsqueda
             Button(
                 onClick = {
@@ -462,7 +493,6 @@ private fun JoinGameTab(
                             }
                         }
 
-                        // Auto-detener después de 12 segundos
                         delay(12000)
                         bluetoothService.stopScanning()
                         isScanning = false
@@ -470,7 +500,7 @@ private fun JoinGameTab(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(54.dp),
                 enabled = connectionState !is ConnectionState.Connected && !isScanning,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = BoardBlue
@@ -479,16 +509,16 @@ private fun JoinGameTab(
             ) {
                 if (isScanning) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(22.dp),
                         color = Color.White,
                         strokeWidth = 2.dp
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Buscando...", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Buscando...", fontSize = 15.sp, fontWeight = FontWeight.Bold)
                 } else {
-                    Icon(Icons.Default.Search, contentDescription = null)
+                    Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Buscar Dispositivos", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Buscar Dispositivos", fontSize = 15.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -520,6 +550,43 @@ private fun JoinGameTab(
     }
 }
 
+// NUEVO: Card de instrucciones
+@Composable
+private fun InstructionsCard(
+    title: String,
+    steps: List<String>,
+    backgroundColor: Color
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = backgroundColor
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = title,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.DarkGray
+            )
+
+            steps.forEach { step ->
+                Text(
+                    text = step,
+                    fontSize = 13.sp,
+                    color = Color.DarkGray,
+                    lineHeight = 17.sp
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun DevicesList(
     devices: List<BluetoothDevice>,
@@ -538,11 +605,10 @@ private fun DevicesList(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(14.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -550,19 +616,20 @@ private fun DevicesList(
                     Icon(
                         Icons.Default.Phone,
                         contentDescription = null,
-                        tint = BoardBlue
+                        tint = BoardBlue,
+                        modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         "Dispositivos Encontrados",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 15.sp
                     )
                 }
 
                 if (isScanning) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
+                        modifier = Modifier.size(18.dp),
                         strokeWidth = 2.dp,
                         color = BoardBlue
                     )
@@ -571,12 +638,11 @@ private fun DevicesList(
 
             Divider()
 
-            // Lista
             if (devices.isEmpty() && !isScanning) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(32.dp),
+                        .padding(28.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -586,13 +652,14 @@ private fun DevicesList(
                         Icon(
                             Icons.Default.Search,
                             contentDescription = null,
-                            modifier = Modifier.size(48.dp),
+                            modifier = Modifier.size(44.dp),
                             tint = Color.Gray
                         )
                         Text(
                             "No se encontraron dispositivos",
                             color = Color.Gray,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            fontSize = 14.sp
                         )
                         Text(
                             "Presiona 'Buscar Dispositivos' para comenzar",
@@ -649,7 +716,7 @@ private fun DeviceItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(14.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -659,7 +726,7 @@ private fun DeviceItem(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(44.dp)
                         .background(
                             color = BoardBlue.copy(alpha = 0.1f),
                             shape = CircleShape
@@ -669,17 +736,18 @@ private fun DeviceItem(
                     Icon(
                         Icons.Default.Phone,
                         contentDescription = null,
-                        tint = BoardBlue
+                        tint = BoardBlue,
+                        modifier = Modifier.size(22.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(14.dp))
 
                 Column {
                     Text(
                         text = device.name ?: "Dispositivo desconocido",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 15.sp
                     )
                     Text(
                         text = device.address,
@@ -720,30 +788,31 @@ private fun WaitingForConnectionCard() {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             CircularProgressIndicator(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(44.dp)
                     .scale(alpha),
                 color = BoardBlue,
-                strokeWidth = 4.dp
+                strokeWidth = 3.dp
             )
 
             Text(
-                text = "Esperando conexión...",
-                fontSize = 18.sp,
+                text = "⏳ Esperando conexión...",
+                fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
                 color = BoardBlue
             )
 
             Text(
-                text = "Otro jugador debe buscar tu dispositivo y conectarse",
-                fontSize = 14.sp,
+                text = "Otro jugador debe buscarte y conectarse.\n\n⚠️ NO salgas de esta pantalla",
+                fontSize = 13.sp,
                 color = Color.Gray,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                lineHeight = 17.sp
             )
         }
     }
@@ -760,26 +829,26 @@ private fun ConnectingCard(deviceName: String) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircularProgressIndicator(
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(28.dp),
                 strokeWidth = 3.dp,
                 color = YellowPlayer.copy(alpha = 0.7f)
             )
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(14.dp))
 
             Column {
                 Text(
                     text = "Conectando...",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    fontSize = 15.sp
                 )
                 Text(
                     text = deviceName,
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     color = Color.Gray
                 )
             }

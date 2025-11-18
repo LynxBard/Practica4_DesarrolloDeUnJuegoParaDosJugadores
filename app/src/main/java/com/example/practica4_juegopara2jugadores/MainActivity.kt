@@ -53,11 +53,15 @@ import com.example.practica4_juegopara2jugadores.viewmodel.NavigationViewModel
  */
 class MainActivity : ComponentActivity() {
 
+    // CAMBIO: Inicializar directamente en lugar de usar lateinit
     private lateinit var bluetoothService: BluetoothGameService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // CRÍTICO: Inicializar el servicio ANTES de usar setContent
+        bluetoothService = BluetoothGameService(this)
 
         setContent {
             ConnectFourTheme {
@@ -70,6 +74,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     override fun onDestroy() {
         super.onDestroy()
         bluetoothService.cleanup()

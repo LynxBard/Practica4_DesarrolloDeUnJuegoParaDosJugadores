@@ -5,8 +5,10 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -19,6 +21,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -34,6 +37,7 @@ import com.example.practica4_juegopara2jugadores.model.Player
 import com.example.practica4_juegopara2jugadores.ui.*
 import com.example.practica4_juegopara2jugadores.viewmodel.BluetoothGameViewModel
 import kotlinx.coroutines.launch
+import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +71,6 @@ fun BluetoothGameScreen(
                 message = "Conexión perdida",
                 duration = SnackbarDuration.Short
             )
-            // Volver automáticamente
             onBack()
         }
     }
@@ -81,7 +84,7 @@ fun BluetoothGameScreen(
                         Text(
                             "Connect Four",
                             fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
+                            fontSize = 16.sp
                         )
                         if (connectionState is ConnectionState.Connected) {
                             BluetoothConnectionIndicator(
@@ -117,12 +120,14 @@ fun BluetoothGameScreen(
             )
         }
     ) { paddingValues ->
+        // Hacer scrollable para pantallas pequeñas
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(BackgroundColor)
                 .padding(paddingValues)
-                .padding(16.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Marcador e indicador de turno
@@ -132,9 +137,9 @@ fun BluetoothGameScreen(
                 isMyTurn = isMyTurn
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Tablero de juego
+            // Tablero de juego (responsivo)
             BluetoothGameBoard(
                 gameState = gameState,
                 isMyTurn = isMyTurn,
@@ -143,7 +148,7 @@ fun BluetoothGameScreen(
                 }
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Botones de control
             BluetoothControlButtons(
@@ -154,6 +159,8 @@ fun BluetoothGameScreen(
                 },
                 onDisconnect = { showDisconnectDialog = true }
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Diálogo de victoria/empate
             if (gameState.isGameOver()) {
@@ -235,7 +242,7 @@ private fun BluetoothConnectionIndicator(
     ) {
         Box(
             modifier = Modifier
-                .size(8.dp)
+                .size(6.dp)
                 .background(
                     color = if (isConnected) Color(0xFF4CAF50) else Color(0xFFFF5252),
                     shape = CircleShape
@@ -243,11 +250,11 @@ private fun BluetoothConnectionIndicator(
                 .graphicsLayer { this.alpha = if (isConnected) alpha else 1f }
         )
 
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(4.dp))
 
         Text(
-            text = if (isConnected) "Conectado con $deviceName" else "Desconectado",
-            fontSize = 12.sp,
+            text = if (isConnected) "Conectado" else "Desconectado",
+            fontSize = 11.sp,
             color = Color.White.copy(alpha = 0.9f)
         )
     }
@@ -262,10 +269,9 @@ private fun BluetoothScoreBoard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        // Mi jugador
         BluetoothPlayerScore(
             player = myPlayer,
             score = if (myPlayer == Player.RED) gameState.redWins else gameState.yellowWins,
@@ -274,7 +280,6 @@ private fun BluetoothScoreBoard(
             isMe = true
         )
 
-        // Oponente
         BluetoothPlayerScore(
             player = myPlayer.other(),
             score = if (myPlayer.other() == Player.RED) gameState.redWins else gameState.yellowWins,
@@ -316,33 +321,33 @@ private fun BluetoothPlayerScore(
     ) {
         Column(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(12.dp)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(36.dp)
                     .clip(CircleShape)
                     .background(playerColor),
                 contentAlignment = Alignment.Center
             ) {
                 if (isMe) {
-                    Text(text = "👤", fontSize = 20.sp)
+                    Text(text = "👤", fontSize = 18.sp)
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Text(
                 text = label,
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
                 text = "Victorias: $score",
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 color = Color.Gray
             )
 
@@ -350,7 +355,7 @@ private fun BluetoothPlayerScore(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = if (isMe) "Tu turno" else "Esperando...",
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = playerColor,
                     textAlign = TextAlign.Center
@@ -375,7 +380,7 @@ private fun BluetoothGameBoard(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp),
+                .padding(bottom = 12.dp),
             colors = CardDefaults.cardColors(
                 containerColor = YellowPlayer.copy(alpha = 0.1f)
             )
@@ -383,19 +388,19 @@ private fun BluetoothGameBoard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(12.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(18.dp),
                     strokeWidth = 2.dp,
                     color = YellowPlayer
                 )
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = "Esperando movimiento del oponente...",
-                    fontSize = 14.sp,
+                    text = "Esperando movimiento...",
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color.DarkGray
                 )
@@ -403,23 +408,36 @@ private fun BluetoothGameBoard(
         }
     }
 
+    // Obtener dimensiones de pantalla
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp.dp
+
+    // Calcular tamaño de celda
+    val availableWidth = screenWidthDp - 32.dp - 16.dp
+    val cellSize = min((availableWidth / GameState.COLUMNS).value, 52f).dp
+
     // Tablero
     Card(
         modifier = Modifier
+            .wrapContentSize()
             .shadow(8.dp, RoundedCornerShape(16.dp)),
         colors = CardDefaults.cardColors(containerColor = BoardBlue)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             for (row in 0 until GameState.ROWS) {
-                Row {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
                     for (col in 0 until GameState.COLUMNS) {
                         BluetoothCellView(
                             cell = gameState.board[row][col],
                             isWinningCell = gameState.winningCells.contains(Pair(row, col)),
                             isLastMove = gameState.lastMove == Pair(row, col),
                             isInteractive = isMyTurn && !gameState.isGameOver(),
+                            cellSize = cellSize,
                             onClick = {
                                 if (isMyTurn && !gameState.isGameOver()) {
                                     onColumnClick(col)
@@ -439,12 +457,13 @@ private fun BluetoothCellView(
     isWinningCell: Boolean,
     isLastMove: Boolean,
     isInteractive: Boolean,
+    cellSize: androidx.compose.ui.unit.Dp,
     onClick: () -> Unit
 ) {
     val scale by animateFloatAsState(
         targetValue = when {
-            isWinningCell -> 1.2f
-            isLastMove -> 1.1f
+            isWinningCell -> 1.15f
+            isLastMove -> 1.08f
             else -> 1f
         },
         animationSpec = spring(
@@ -464,24 +483,22 @@ private fun BluetoothCellView(
 
     Box(
         modifier = Modifier
-            .size(48.dp)
-            .padding(4.dp)
+            .size(cellSize)
             .clickable(enabled = isInteractive, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxSize(0.85f)
                 .scale(scale)
                 .clip(CircleShape)
                 .background(cellColor)
         )
 
-        // Indicador de último movimiento
         if (isLastMove && cell is Cell.Occupied) {
             Box(
                 modifier = Modifier
-                    .size(12.dp)
+                    .size(cellSize * 0.3f)
                     .background(Color.White, CircleShape)
             )
         }
@@ -494,24 +511,21 @@ private fun BluetoothControlButtons(
     onDisconnect: () -> Unit
 ) {
     Column(
+        modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        Button(
+            onClick = onResetGame,
+            colors = ButtonDefaults.buttonColors(containerColor = BoardBlue),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Button(
-                onClick = onResetGame,
-                colors = ButtonDefaults.buttonColors(containerColor = BoardBlue),
-                modifier = Modifier.weight(1f)
-            ) {
-                Icon(
-                    Icons.Default.Refresh,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Nueva Partida")
-            }
+            Icon(
+                Icons.Default.Refresh,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("Nueva Partida", fontSize = 12.sp)
         }
 
         OutlinedButton(
@@ -524,10 +538,10 @@ private fun BluetoothControlButtons(
             Icon(
                 Icons.Default.Close,
                 contentDescription = null,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(16.dp)
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Desconectar")
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("Desconectar", fontSize = 12.sp)
         }
     }
 }

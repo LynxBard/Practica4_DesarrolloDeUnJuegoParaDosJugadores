@@ -81,6 +81,7 @@ class BluetoothGameService(private val context: Context) {
         // UUID estándar para SPP (Serial Port Profile)
         private val SERVICE_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
         private const val BUFFER_SIZE = 1024
+        private const val CONNECTION_TIMEOUT = 10000L // 10 segundos
     }
 
     private val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
@@ -112,6 +113,7 @@ class BluetoothGameService(private val context: Context) {
     private var scanningJob: Job? = null
     private var serverJob: Job? = null
     private var receiveJob: Job? = null
+    private var connectionTimeoutJob: Job? = null
 
     // BroadcastReceiver para descubrimiento de dispositivos
     private val discoveryReceiver = object : BroadcastReceiver() {
@@ -319,6 +321,7 @@ class BluetoothGameService(private val context: Context) {
 
     /**
      * Conecta a un dispositivo remoto como cliente
+     * MEJORADO: Usa reflexión como fallback
      */
     @SuppressLint("MissingPermission")
     suspend fun connectToDevice(device: BluetoothDevice): BluetoothResult<Unit> = withContext(Dispatchers.IO) {
@@ -337,13 +340,64 @@ class BluetoothGameService(private val context: Context) {
 
             Log.d(TAG, "Connecting to device: ${device.name} - ${device.address}")
 
-            // Crear socket
-            clientSocket = device.createRfcommSocketToServiceRecord(SERVICE_UUID)
+            // Intentar conectar con método estándar primero
+            var socket: BluetoothSocket? = null
+            var connectionSuccessful = false
 
-            // Conectar
-            clientSocket?.connect()
+            // MÉTODO 1: Conexión estándar
+            try {
+                socket = device.createRfcommSocketToServiceRecord(SERVICE_UUID)
 
-            // Configurar streams
+                // Timeout de conexión
+                connectionTimeoutJob = serviceScope.launch {
+                    delay(CONNECTION_TIMEOUT)
+                    if (!connectionSuccessful) {
+                        Log.w(TAG, "Connection timeout, cancelling")
+                        socket?.close()
+                    }
+                }
+
+                socket.connect()
+                connectionSuccessful = true
+                connectionTimeoutJob?.cancel()
+
+                Log.d(TAG, "Standard connection successful")
+            } catch (e: IOException) {
+                Log.w(TAG, "Standard connection failed, trying fallback method", e)
+                socket?.close()
+                socket = null
+                connectionSuccessful = false
+                connectionTimeoutJob?.cancel()
+
+                // MÉTODO 2: Conexión con reflexión (fallback para algunos dispositivos)
+                try {
+                    val method = device.javaClass.getMethod("createRfcommSocket", Int::class.javaPrimitiveType)
+                    socket = method.invoke(device, 1) as BluetoothSocket
+
+                    connectionTimeoutJob = serviceScope.launch {
+                        delay(CONNECTION_TIMEOUT)
+                        if (!connectionSuccessful) {
+                            socket?.close()
+                        }
+                    }
+
+                    socket.connect()
+                    connectionSuccessful = true
+                    connectionTimeoutJob?.cancel()
+
+                    Log.d(TAG, "Fallback connection successful")
+                } catch (e2: Exception) {
+                    Log.e(TAG, "Fallback connection also failed", e2)
+                    socket?.close()
+                    throw IOException("No se pudo conectar con ningún método", e2)
+                }
+            }
+
+            if (socket == null || !connectionSuccessful) {
+                throw IOException("No se pudo establecer conexión")
+            }
+
+            clientSocket = socket
             inputStream = clientSocket?.inputStream
             outputStream = clientSocket?.outputStream
 
@@ -360,9 +414,14 @@ class BluetoothGameService(private val context: Context) {
 
         } catch (e: IOException) {
             Log.e(TAG, "Connection failed", e)
-            _connectionState.value = ConnectionState.Error("Error de conexión: ${e.message}")
+            val errorMsg = when {
+                e.message?.contains("timeout") == true -> "Tiempo de espera agotado. Asegúrate de que el otro dispositivo esté esperando conexiones."
+                e.message?.contains("closed") == true -> "El dispositivo remoto rechazó la conexión. Asegúrate de que el servidor esté activo."
+                else -> "Error de conexión: ${e.message}"
+            }
+            _connectionState.value = ConnectionState.Error(errorMsg)
             closeConnection()
-            BluetoothResult.Error("Error al conectar: ${e.message}", e)
+            BluetoothResult.Error(errorMsg, e)
         } catch (e: SecurityException) {
             _connectionState.value = ConnectionState.Error("Permisos denegados")
             BluetoothResult.Error("Error de permisos: ${e.message}", e)
@@ -604,6 +663,7 @@ class BluetoothGameService(private val context: Context) {
      */
     private fun closeConnection() {
         try {
+            connectionTimeoutJob?.cancel()
             receiveJob?.cancel()
             serverJob?.cancel()
 
