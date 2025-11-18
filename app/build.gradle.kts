@@ -2,7 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21" // Para kotlinx.serialization
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
 }
 
 android {
@@ -74,10 +74,8 @@ dependencies {
     // Kotlinx Serialization - JSON
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
-    // Jackson para XML
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.16.1")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.1")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")
+    // Simple XML para Android (en lugar de Jackson)
+    implementation("org.simpleframework:simple-xml:2.7.1")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")

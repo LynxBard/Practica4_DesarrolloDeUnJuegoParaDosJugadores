@@ -2,13 +2,13 @@ package com.example.practica4_juegopara2jugadores.data
 
 import android.content.Context
 import com.example.practica4_juegopara2jugadores.model.*
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.simpleframework.xml.core.Persister
 import java.io.File
+import java.io.StringWriter
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -22,9 +22,7 @@ class GameSaveRepository(private val context: Context) {
         ignoreUnknownKeys = true
     }
 
-    private val xmlMapper = XmlMapper().apply {
-        registerKotlinModule()
-    }
+    private val xmlSerializer = Persister()
 
     companion object {
         private const val SAVE_DIRECTORY = "SavedGames"
@@ -35,7 +33,7 @@ class GameSaveRepository(private val context: Context) {
      * Obtiene el directorio de guardados
      */
     fun getSaveDirectory(): File {
-        val dir = File(context.getExternalFilesDir(null), SAVE_DIRECTORY)
+        val dir = File(context.filesDir, SAVE_DIRECTORY)
         if (!dir.exists()) {
             dir.mkdirs()
         }
@@ -64,6 +62,7 @@ class GameSaveRepository(private val context: Context) {
             file.writeText(content)
             Result.success(file.absolutePath)
         } catch (e: Exception) {
+            e.printStackTrace()
             Result.failure(Exception("Error al guardar partida: ${e.message}", e))
         }
     }
@@ -87,6 +86,7 @@ class GameSaveRepository(private val context: Context) {
 
                 Result.success(saveData)
             } catch (e: Exception) {
+                e.printStackTrace()
                 Result.failure(Exception("Error al cargar partida: ${e.message}", e))
             }
         }
@@ -95,35 +95,40 @@ class GameSaveRepository(private val context: Context) {
      * Lista todas las partidas guardadas
      */
     suspend fun listSavedGames(): List<SavedGameInfo> = withContext(Dispatchers.IO) {
-        val saveDir = getSaveDirectory()
-        val files = saveDir.listFiles() ?: return@withContext emptyList()
+        try {
+            val saveDir = getSaveDirectory()
+            val files = saveDir.listFiles() ?: return@withContext emptyList()
 
-        files.mapNotNull { file ->
-            try {
-                val format = when (file.extension) {
-                    "txt" -> SaveFormat.TXT
-                    "xml" -> SaveFormat.XML
-                    "json" -> SaveFormat.JSON
-                    else -> return@mapNotNull null
+            files.mapNotNull { file ->
+                try {
+                    val format = when (file.extension) {
+                        "txt" -> SaveFormat.TXT
+                        "xml" -> SaveFormat.XML
+                        "json" -> SaveFormat.JSON
+                        else -> return@mapNotNull null
+                    }
+
+                    val content = file.readText()
+                    val timestamp = extractTimestamp(content, format)
+                    val gameMode = extractGameMode(content, format)
+
+                    SavedGameInfo(
+                        fileName = file.name,
+                        displayName = formatDisplayName(file.name, timestamp),
+                        timestamp = timestamp,
+                        gameMode = gameMode,
+                        format = format,
+                        fileSizeBytes = file.length()
+                    )
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    null
                 }
-
-                // Leer metadata del archivo
-                val content = file.readText()
-                val timestamp = extractTimestamp(content, format)
-                val gameMode = extractGameMode(content, format)
-
-                SavedGameInfo(
-                    fileName = file.name,
-                    displayName = formatDisplayName(file.name, timestamp),
-                    timestamp = timestamp,
-                    gameMode = gameMode,
-                    format = format,
-                    fileSizeBytes = file.length()
-                )
-            } catch (e: Exception) {
-                null // Ignorar archivos corruptos
-            }
-        }.sortedByDescending { it.timestamp }
+            }.sortedByDescending { it.timestamp }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
     }
 
     /**
@@ -144,7 +149,6 @@ class GameSaveRepository(private val context: Context) {
     private fun serializeToTxt(data: GameSaveData): String {
         val sb = StringBuilder()
 
-        // Sección METADATA
         sb.appendLine("[METADATA]")
         sb.appendLine("Timestamp: ${data.timestamp}")
         sb.appendLine("Date: ${formatDate(data.timestamp)}")
@@ -157,15 +161,13 @@ class GameSaveRepository(private val context: Context) {
         sb.appendLine("IsDraw: ${data.isDraw}")
         sb.appendLine()
 
-        // Sección BOARD
         sb.appendLine("[BOARD]")
         data.boardState.forEachIndexed { rowIndex, row ->
             sb.append("Row$rowIndex: ")
-            sb.appendLine(row.joinToString(","))
+            sb.appendLine(row.cells.joinToString(","))
         }
         sb.appendLine()
 
-        // Sección MOVES
         sb.appendLine("[MOVES]")
         sb.appendLine("TotalMoves: ${data.moveHistory.size}")
         data.moveHistory.forEachIndexed { index, move ->
@@ -194,19 +196,16 @@ class GameSaveRepository(private val context: Context) {
             }
         }
 
-        // Parsear METADATA
         val metadata = sections["METADATA"]?.associate { line ->
             val parts = line.split(": ", limit = 2)
             parts[0] to parts.getOrNull(1)
         } ?: emptyMap()
 
-        // Parsear BOARD
         val boardState = sections["BOARD"]?.map { line ->
             val cells = line.substringAfter(": ").split(",")
-            cells
-        } ?: emptyList()
+            BoardRow(cells.toMutableList())
+        }?.toMutableList() ?: mutableListOf()
 
-        // Parsear MOVES
         val moveHistory = sections["MOVES"]?.filter { it.startsWith("Move") }?.map { line ->
             val parts = line.substringAfter(": ").split(",")
             SavedMove(
@@ -215,7 +214,7 @@ class GameSaveRepository(private val context: Context) {
                 row = parts[2].toInt(),
                 timestamp = parts[3].toLong()
             )
-        } ?: emptyList()
+        }?.toMutableList() ?: mutableListOf()
 
         return GameSaveData(
             timestamp = metadata["Timestamp"]?.toLongOrNull() ?: 0L,
@@ -234,11 +233,13 @@ class GameSaveRepository(private val context: Context) {
     // ==================== Serialización XML ====================
 
     private fun serializeToXml(data: GameSaveData): String {
-        return xmlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(data)
+        val writer = StringWriter()
+        xmlSerializer.write(data, writer)
+        return writer.toString()
     }
 
     private fun deserializeFromXml(content: String): GameSaveData {
-        return xmlMapper.readValue(content, GameSaveData::class.java)
+        return xmlSerializer.read(GameSaveData::class.java, content)
     }
 
     // ==================== Serialización JSON ====================

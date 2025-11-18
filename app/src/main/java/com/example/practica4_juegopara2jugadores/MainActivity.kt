@@ -28,15 +28,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.practica4_juegopara2jugadores.data.GameSaveRepository
 import com.example.practica4_juegopara2jugadores.domain.ai.ConnectFourAI
-import com.example.practica4_juegopara2jugadores.domain.ai.Difficulty
 import com.example.practica4_juegopara2jugadores.model.GameMode
 import com.example.practica4_juegopara2jugadores.model.Player
 import com.example.practica4_juegopara2jugadores.navigation.Screen
 import com.example.practica4_juegopara2jugadores.ui.GameScreen
 import com.example.practica4_juegopara2jugadores.ui.screens.AIConfigScreen
 import com.example.practica4_juegopara2jugadores.ui.screens.GameModeSelectionScreen
+import com.example.practica4_juegopara2jugadores.ui.screens.LoadGameScreen
 import com.example.practica4_juegopara2jugadores.ui.screens.MainMenuScreen
 import com.example.practica4_juegopara2jugadores.ui.theme.ConnectFourTheme
 import com.example.practica4_juegopara2jugadores.viewmodel.GameViewModel
@@ -69,6 +71,7 @@ fun ConnectFourApp(
     navigationViewModel: NavigationViewModel = viewModel()
 ) {
     val currentScreen by navigationViewModel.currentScreen.collectAsState()
+    val context = LocalContext.current
 
     when (currentScreen) {
         is Screen.MainMenu -> {
@@ -98,8 +101,6 @@ fun ConnectFourApp(
             // Mostrar pantalla de configuración de IA
             AIConfigScreen(
                 onStartGame = { difficulty, playerGoesFirst ->
-                    // Crear el ViewModel con IA configurada
-                    val ai = ConnectFourAI(difficulty, Player.YELLOW)
                     navigationViewModel.navigateToSinglePlayerWithConfig(difficulty, playerGoesFirst)
                 },
                 onBack = { navigationViewModel.navigateBack() }
@@ -144,10 +145,49 @@ fun ConnectFourApp(
         }
 
         is Screen.SaveLoadMenu -> {
-            PlaceholderScreen(
-                title = "Cargar Partida",
-                message = "Próximamente: Sistema de guardado",
-                onBack = { navigationViewModel.navigateBack() }
+            // Nueva pantalla de carga de partidas
+            val repository = remember { GameSaveRepository(context) }
+
+            LoadGameScreen(
+                repository = repository,
+                onBack = { navigationViewModel.navigateBack() },
+                onLoadGame = { gameState ->
+                    // Cargar el juego según su modo
+                    navigationViewModel.navigateToLoadedGame(gameState)
+                },
+                onNewGame = {
+                    navigationViewModel.navigateTo(Screen.GameModeSelection)
+                }
+            )
+        }
+
+        is Screen.LoadedGame -> {
+            val loadedState = (currentScreen as Screen.LoadedGame).gameState
+
+            // Determinar si necesita IA según el modo de juego
+            val gameViewModel: GameViewModel = if (loadedState.gameMode == GameMode.SINGLE_PLAYER) {
+                remember {
+                    val ai = ConnectFourAI(
+                        difficulty = com.example.practica4_juegopara2jugadores.domain.ai.Difficulty.MEDIUM,
+                        aiPlayer = Player.YELLOW
+                    )
+                    GameViewModel(ai, playerGoesFirst = true).apply {
+                        // Cargar el estado guardado
+                        loadGameState(loadedState)
+                    }
+                }
+            } else {
+                remember {
+                    GameViewModel().apply {
+                        loadGameState(loadedState)
+                    }
+                }
+            }
+
+            GameScreen(
+                viewModel = gameViewModel,
+                onBack = { navigationViewModel.navigateBack() },
+                showAIIndicator = loadedState.gameMode == GameMode.SINGLE_PLAYER
             )
         }
     }

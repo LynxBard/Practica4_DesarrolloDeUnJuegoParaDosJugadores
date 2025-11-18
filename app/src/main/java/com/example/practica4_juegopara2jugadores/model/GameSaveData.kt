@@ -1,82 +1,82 @@
 package com.example.practica4_juegopara2jugadores.model
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import kotlinx.serialization.Serializable
+import org.simpleframework.xml.Element
+import org.simpleframework.xml.ElementList
+import org.simpleframework.xml.Root
 
 /**
  * Datos serializables para guardar el estado completo de una partida
  */
 @Serializable
-@JacksonXmlRootElement(localName = "GameSave")
+@Root(name = "GameSave", strict = false)
 data class GameSaveData(
-    @JsonProperty("timestamp")
-    @JacksonXmlProperty(localName = "Timestamp")
-    val timestamp: Long,
+    @field:Element(name = "Timestamp")
+    var timestamp: Long = 0L,
 
-    @JsonProperty("gameMode")
-    @JacksonXmlProperty(localName = "GameMode")
-    val gameMode: String,
+    @field:Element(name = "GameMode")
+    var gameMode: String = "",
 
-    @JsonProperty("boardState")
-    @JacksonXmlElementWrapper(localName = "BoardState")
-    @JacksonXmlProperty(localName = "Row")
-    val boardState: List<List<String>>,
+    @field:ElementList(name = "BoardState", entry = "Row", inline = false)
+    var boardState: MutableList<BoardRow> = mutableListOf(),
 
-    @JsonProperty("currentPlayer")
-    @JacksonXmlProperty(localName = "CurrentPlayer")
-    val currentPlayer: String,
+    @field:Element(name = "CurrentPlayer")
+    var currentPlayer: String = "",
 
-    @JsonProperty("redWins")
-    @JacksonXmlProperty(localName = "RedWins")
-    val redWins: Int,
+    @field:Element(name = "RedWins")
+    var redWins: Int = 0,
 
-    @JsonProperty("yellowWins")
-    @JacksonXmlProperty(localName = "YellowWins")
-    val yellowWins: Int,
+    @field:Element(name = "YellowWins")
+    var yellowWins: Int = 0,
 
-    @JsonProperty("elapsedTimeSeconds")
-    @JacksonXmlProperty(localName = "ElapsedTimeSeconds")
-    val elapsedTimeSeconds: Int,
+    @field:Element(name = "ElapsedTimeSeconds")
+    var elapsedTimeSeconds: Int = 0,
 
-    @JsonProperty("moveHistory")
-    @JacksonXmlElementWrapper(localName = "MoveHistory")
-    @JacksonXmlProperty(localName = "Move")
-    val moveHistory: List<SavedMove> = emptyList(),
+    @field:ElementList(name = "MoveHistory", entry = "Move", inline = false)
+    var moveHistory: MutableList<SavedMove> = mutableListOf(),
 
-    @JsonProperty("winner")
-    @JacksonXmlProperty(localName = "Winner")
-    val winner: String? = null,
+    @field:Element(name = "Winner", required = false)
+    var winner: String? = null,
 
-    @JsonProperty("isDraw")
-    @JacksonXmlProperty(localName = "IsDraw")
-    val isDraw: Boolean = false
-)
+    @field:Element(name = "IsDraw")
+    var isDraw: Boolean = false
+) {
+    // Constructor sin argumentos requerido por Simple XML
+    constructor() : this(0L, "", mutableListOf(), "", 0, 0, 0, mutableListOf(), null, false)
+}
+
+/**
+ * Representa una fila del tablero para serialización XML
+ */
+@Serializable
+@Root(name = "Row", strict = false)
+data class BoardRow(
+    @field:ElementList(name = "Cells", entry = "Cell", inline = true)
+    var cells: MutableList<String> = mutableListOf()
+) {
+    constructor() : this(mutableListOf())
+}
 
 /**
  * Representa un movimiento guardado
  */
 @Serializable
-@JacksonXmlRootElement(localName = "Move")
+@Root(name = "Move", strict = false)
 data class SavedMove(
-    @JsonProperty("player")
-    @JacksonXmlProperty(localName = "Player")
-    val player: String,
+    @field:Element(name = "Player")
+    var player: String = "",
 
-    @JsonProperty("column")
-    @JacksonXmlProperty(localName = "Column")
-    val column: Int,
+    @field:Element(name = "Column")
+    var column: Int = 0,
 
-    @JsonProperty("row")
-    @JacksonXmlProperty(localName = "Row")
-    val row: Int,
+    @field:Element(name = "Row")
+    var row: Int = 0,
 
-    @JsonProperty("timestamp")
-    @JacksonXmlProperty(localName = "Timestamp")
-    val timestamp: Long
-)
+    @field:Element(name = "Timestamp")
+    var timestamp: Long = 0L
+) {
+    constructor() : this("", 0, 0, 0L)
+}
 
 /**
  * Información resumida de una partida guardada
@@ -104,16 +104,18 @@ enum class SaveFormat(val extension: String, val displayName: String) {
  */
 fun GameState.toSaveData(): GameSaveData {
     val boardState = board.map { row ->
-        row.map { cell ->
-            when (cell) {
-                is Cell.Empty -> "EMPTY"
-                is Cell.Occupied -> when (cell.player) {
-                    Player.RED -> "RED"
-                    Player.YELLOW -> "YELLOW"
+        BoardRow(
+            cells = row.map { cell ->
+                when (cell) {
+                    is Cell.Empty -> "EMPTY"
+                    is Cell.Occupied -> when (cell.player) {
+                        Player.RED -> "RED"
+                        Player.YELLOW -> "YELLOW"
+                    }
                 }
-            }
-        }
-    }
+            }.toMutableList()
+        )
+    }.toMutableList()
 
     val savedMoves = moveHistory.map { move ->
         SavedMove(
@@ -122,7 +124,7 @@ fun GameState.toSaveData(): GameSaveData {
             row = move.row,
             timestamp = move.timestamp
         )
-    }
+    }.toMutableList()
 
     return GameSaveData(
         timestamp = System.currentTimeMillis(),
@@ -143,7 +145,7 @@ fun GameState.toSaveData(): GameSaveData {
  */
 fun GameSaveData.toGameState(): GameState {
     val board = boardState.map { row ->
-        row.map { cellStr ->
+        row.cells.map { cellStr ->
             when (cellStr) {
                 "EMPTY" -> Cell.Empty
                 "RED" -> Cell.Occupied(Player.RED)
@@ -167,7 +169,7 @@ fun GameSaveData.toGameState(): GameState {
         currentPlayer = Player.valueOf(currentPlayer),
         winner = winner?.let { Player.valueOf(it) },
         isDraw = isDraw,
-        winningCells = emptyList(), // Se recalculará si es necesario
+        winningCells = emptyList(),
         redWins = redWins,
         yellowWins = yellowWins,
         lastMove = moves.lastOrNull()?.let { Pair(it.row, it.column) },

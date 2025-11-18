@@ -2,6 +2,7 @@ package com.example.practica4_juegopara2jugadores.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.practica4_juegopara2jugadores.domain.ai.Difficulty
+import com.example.practica4_juegopara2jugadores.model.GameState
 import com.example.practica4_juegopara2jugadores.navigation.Screen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +38,14 @@ class NavigationViewModel : ViewModel() {
     fun navigateToSinglePlayerWithConfig(difficulty: Difficulty, playerGoesFirst: Boolean) {
         navigationStack.add(_currentScreen.value)
         _currentScreen.value = Screen.SinglePlayerGameWithConfig(difficulty, playerGoesFirst)
+    }
+
+    /**
+     * Navega a una partida cargada
+     */
+    fun navigateToLoadedGame(gameState: GameState) {
+        navigationStack.add(_currentScreen.value)
+        _currentScreen.value = Screen.LoadedGame(gameState)
     }
 
     /**
