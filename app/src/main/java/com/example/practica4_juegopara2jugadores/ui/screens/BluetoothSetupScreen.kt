@@ -116,11 +116,14 @@ fun BluetoothSetupScreen(
 
     // Verificar Bluetooth al inicio
     LaunchedEffect(Unit) {
-        if (!bluetoothService.isBluetoothEnabled()) {
+        // PRIMERO verificar permisos
+        if (!bluetoothService.hasRequiredPermissions()) {
+            permissionLauncher.launch(bluetoothService.getRequiredPermissions())
+        }
+        // LUEGO verificar si Bluetooth está habilitado
+        else if (!bluetoothService.isBluetoothEnabled()) {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             enableBluetoothLauncher.launch(enableBtIntent)
-        } else if (!bluetoothService.hasRequiredPermissions()) {
-            permissionLauncher.launch(bluetoothService.getRequiredPermissions())
         }
     }
 
@@ -219,7 +222,10 @@ fun BluetoothSetupScreen(
                                 discoverableLauncher.launch(discoverableIntent)
                             }
                         },
-                        snackbarHostState = snackbarHostState
+                        snackbarHostState = snackbarHostState,
+                        onRequestPermissions = {
+                            permissionLauncher.launch(bluetoothService.getRequiredPermissions())
+                        }
                     )
                     1 -> JoinGameTab(
                         bluetoothService = bluetoothService,
@@ -254,8 +260,10 @@ private fun CreateGameTab(
     onHostNameChange: (String) -> Unit,
     connectionState: ConnectionState,
     onMakeDiscoverable: () -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    onRequestPermissions: () -> Unit // NUEVO parámetro
 ) {
+    val scope = rememberCoroutineScope()
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -353,11 +361,31 @@ private fun CreateGameTab(
 
                     // Botón para hacer visible
                     Button(
-                        onClick = onMakeDiscoverable,
+                        onClick = {
+                            if (!bluetoothService.hasRequiredPermissions()) {
+                                onRequestPermissions()
+                            } else {
+                                // PRIMERO iniciar el servidor
+                                scope.launch {
+                                    when (val result = bluetoothService.startServer()) {
+                                        is BluetoothResult.Success -> {
+                                            snackbarHostState.showSnackbar("Servidor iniciado. Haciendo dispositivo visible...")
+                                            // LUEGO hacer el dispositivo visible
+                                            onMakeDiscoverable()
+                                        }
+                                        is BluetoothResult.Error -> {
+                                            snackbarHostState.showSnackbar(
+                                                "Error al iniciar servidor: ${result.message}"
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(54.dp),
-                        enabled = hostName.isNotBlank(),
+                        enabled = hostName.isNotBlank() && connectionState !is ConnectionState.Connecting,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = BoardBlue
                         ),

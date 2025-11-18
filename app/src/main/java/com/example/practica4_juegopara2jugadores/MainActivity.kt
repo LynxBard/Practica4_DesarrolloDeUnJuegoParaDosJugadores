@@ -53,15 +53,12 @@ import com.example.practica4_juegopara2jugadores.viewmodel.NavigationViewModel
  */
 class MainActivity : ComponentActivity() {
 
-    // CAMBIO: Inicializar directamente en lugar de usar lateinit
-    private lateinit var bluetoothService: BluetoothGameService
+    // Inicializar como lazy para evitar problemas de timing
+    private val bluetoothService by lazy { BluetoothGameService(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        // CRÍTICO: Inicializar el servicio ANTES de usar setContent
-        bluetoothService = BluetoothGameService(this)
 
         setContent {
             ConnectFourTheme {

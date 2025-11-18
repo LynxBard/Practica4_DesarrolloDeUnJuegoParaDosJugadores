@@ -81,7 +81,7 @@ class BluetoothGameService(private val context: Context) {
         // UUID estándar para SPP (Serial Port Profile)
         private val SERVICE_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
         private const val BUFFER_SIZE = 1024
-        private const val CONNECTION_TIMEOUT = 10000L // 10 segundos
+        private const val CONNECTION_TIMEOUT = 30000L // 30 segundos (aumentado)
     }
 
     private val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
@@ -339,6 +339,8 @@ class BluetoothGameService(private val context: Context) {
             closeConnection()
 
             Log.d(TAG, "Connecting to device: ${device.name} - ${device.address}")
+            Log.d(TAG, "Device bond state: ${device.bondState}")
+            Log.d(TAG, "Device type: ${device.type}")
 
             // Intentar conectar con método estándar primero
             var socket: BluetoothSocket? = null
