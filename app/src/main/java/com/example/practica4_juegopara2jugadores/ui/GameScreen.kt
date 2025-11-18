@@ -330,7 +330,7 @@ fun GameBoard(
 
     // Calcular tamaño de celda basado en ancho de pantalla
     // Dejar espacio para padding del Card (16dp * 2) y padding entre celdas
-    val availableWidth = screenWidthDp - 32.dp - 16.dp // Card padding + margen
+    val availableWidth = screenWidthDp - 36.dp - 18.dp // Card padding + margen
     val cellSize = min((availableWidth / GameState.COLUMNS).value, 52f).dp
 
     Card(
@@ -340,7 +340,7 @@ fun GameBoard(
         colors = CardDefaults.cardColors(containerColor = BoardBlue)
     ) {
         Column(
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier.padding(7.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             for (row in 0 until GameState.ROWS) {
