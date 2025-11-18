@@ -12,8 +12,11 @@ sealed class Screen {
         val difficulty: Difficulty,
         val playerGoesFirst: Boolean
     ) : Screen()
+
+    // NUEVO: Pantallas Bluetooth
     object BluetoothSetup : Screen()
-    object BluetoothGame : Screen()
+    data class BluetoothGame(val isHost: Boolean) : Screen()
+
     object SaveLoadMenu : Screen()
     data class LoadedGame(val gameState: GameState) : Screen()
 }

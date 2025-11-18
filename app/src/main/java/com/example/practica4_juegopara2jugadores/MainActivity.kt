@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.practica4_juegopara2jugadores.data.GameSaveRepository
+import com.example.practica4_juegopara2jugadores.data.bluetooth.BluetoothGameService // NUEVO
 import com.example.practica4_juegopara2jugadores.domain.ai.ConnectFourAI
 import com.example.practica4_juegopara2jugadores.model.GameMode
 import com.example.practica4_juegopara2jugadores.model.Player
@@ -40,6 +41,8 @@ import com.example.practica4_juegopara2jugadores.ui.screens.AIConfigScreen
 import com.example.practica4_juegopara2jugadores.ui.screens.GameModeSelectionScreen
 import com.example.practica4_juegopara2jugadores.ui.screens.LoadGameScreen
 import com.example.practica4_juegopara2jugadores.ui.screens.MainMenuScreen
+import com.example.practica4_juegopara2jugadores.ui.screens.BluetoothSetupScreen
+import com.example.practica4_juegopara2jugadores.ui.screens.BluetoothGameScreen
 import com.example.practica4_juegopara2jugadores.ui.theme.ConnectFourTheme
 import com.example.practica4_juegopara2jugadores.viewmodel.GameViewModel
 import com.example.practica4_juegopara2jugadores.viewmodel.NavigationViewModel
@@ -49,6 +52,9 @@ import com.example.practica4_juegopara2jugadores.viewmodel.NavigationViewModel
  * Utiliza Jetpack Compose para la UI con sistema de navegación
  */
 class MainActivity : ComponentActivity() {
+
+    private lateinit var bluetoothService: BluetoothGameService
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -59,15 +65,20 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ConnectFourApp()
+                    ConnectFourApp(bluetoothService)
                 }
             }
         }
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        bluetoothService.cleanup()
     }
 }
 
 @Composable
 fun ConnectFourApp(
+    bluetoothService: BluetoothGameService,
     navigationViewModel: NavigationViewModel = viewModel()
 ) {
     val currentScreen by navigationViewModel.currentScreen.collectAsState()
@@ -128,19 +139,27 @@ fun ConnectFourApp(
             )
         }
 
+        // NUEVO: Pantalla de configuración Bluetooth
         is Screen.BluetoothSetup -> {
-            PlaceholderScreen(
-                title = "Configuración Bluetooth",
-                message = "Próximamente: Juego por Bluetooth",
+            BluetoothSetupScreen(
+                bluetoothService = bluetoothService,
+                onConnectionEstablished = { isHost ->
+                    navigationViewModel.navigateTo(Screen.BluetoothGame(isHost))
+                },
                 onBack = { navigationViewModel.navigateBack() }
             )
         }
 
         is Screen.BluetoothGame -> {
-            PlaceholderScreen(
-                title = "Juego Bluetooth",
-                message = "Partida en progreso...",
-                onBack = { navigationViewModel.navigateBack() }
+            val isHost = (currentScreen as Screen.BluetoothGame).isHost
+
+            BluetoothGameScreen(
+                bluetoothService = bluetoothService,
+                isHost = isHost,
+                onBack = {
+                    bluetoothService.disconnect()
+                    navigationViewModel.navigateBack()
+                }
             )
         }
 
