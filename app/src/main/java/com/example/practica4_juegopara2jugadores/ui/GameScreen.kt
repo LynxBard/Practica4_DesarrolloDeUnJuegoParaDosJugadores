@@ -5,8 +5,10 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Save
@@ -19,6 +21,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -35,6 +38,7 @@ import com.example.practica4_juegopara2jugadores.model.Player
 import com.example.practica4_juegopara2jugadores.ui.screens.SaveGameScreen
 import com.example.practica4_juegopara2jugadores.viewmodel.GameViewModel
 import kotlinx.coroutines.launch
+import kotlin.math.min
 
 // Colores del juego
 val RedPlayer = Color(0xFFE53935)
@@ -100,12 +104,14 @@ fun GameScreen(
             }
         }
     ) { paddingValues ->
+        // Hacer la columna scrollable para pantallas pequeñas
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(BackgroundColor)
                 .padding(paddingValues)
-                .padding(16.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Header con título (solo si no hay TopAppBar)
@@ -119,22 +125,24 @@ fun GameScreen(
                 )
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
+
             // Indicador de turno y puntuación
             ScoreBoard(
                 gameState = gameState,
                 isAIThinking = isAIThinking && showAIIndicator
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Tablero de juego
+            // Tablero de juego (ahora responsivo)
             GameBoard(
                 gameState = gameState,
                 onColumnClick = { column -> viewModel.makeMove(column) },
                 isInteractionEnabled = !isAIThinking
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Botones de control
             ControlButtons(
@@ -142,6 +150,8 @@ fun GameScreen(
                 onResetAll = { viewModel.resetAll() },
                 onSaveGame = { showSaveDialog = true }
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Diálogo de victoria/empate
             if (gameState.isGameOver()) {
@@ -195,7 +205,7 @@ fun ScoreBoard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         // Jugador Rojo
@@ -260,13 +270,13 @@ fun PlayerScore(
     ) {
         Column(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(12.dp)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(36.dp)
                     .clip(CircleShape)
                     .background(playerColor),
                 contentAlignment = Alignment.Center
@@ -274,7 +284,7 @@ fun PlayerScore(
                 if (isAIThinking) {
                     Text(
                         text = "🤔",
-                        fontSize = 20.sp,
+                        fontSize = 18.sp,
                         modifier = Modifier.graphicsLayer {
                             rotationZ = rotation
                         }
@@ -282,24 +292,24 @@ fun PlayerScore(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Text(
                 text = label,
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
                 text = "Victorias: $score",
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 color = Color.Gray
             )
 
             if (isCurrentPlayer) {
                 Text(
                     text = if (isAIThinking) "Pensando..." else "Tu turno",
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = playerColor
                 )
@@ -314,21 +324,35 @@ fun GameBoard(
     onColumnClick: (Int) -> Unit,
     isInteractionEnabled: Boolean = true
 ) {
+    // Obtener dimensiones de pantalla
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp.dp
+
+    // Calcular tamaño de celda basado en ancho de pantalla
+    // Dejar espacio para padding del Card (16dp * 2) y padding entre celdas
+    val availableWidth = screenWidthDp - 32.dp - 16.dp // Card padding + margen
+    val cellSize = min((availableWidth / GameState.COLUMNS).value, 52f).dp
+
     Card(
         modifier = Modifier
+            .wrapContentSize()
             .shadow(8.dp, RoundedCornerShape(16.dp)),
         colors = CardDefaults.cardColors(containerColor = BoardBlue)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             for (row in 0 until GameState.ROWS) {
-                Row {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
                     for (col in 0 until GameState.COLUMNS) {
                         CellView(
                             cell = gameState.board[row][col],
                             isWinningCell = gameState.winningCells.contains(Pair(row, col)),
                             isLastMove = gameState.lastMove == Pair(row, col),
+                            cellSize = cellSize,
                             onClick = {
                                 if (isInteractionEnabled && !gameState.isGameOver()) {
                                     onColumnClick(col)
@@ -347,10 +371,11 @@ fun CellView(
     cell: Cell,
     isWinningCell: Boolean,
     isLastMove: Boolean,
+    cellSize: androidx.compose.ui.unit.Dp,
     onClick: () -> Unit
 ) {
     val scale by animateFloatAsState(
-        targetValue = if (isWinningCell) 1.2f else 1f,
+        targetValue = if (isWinningCell) 1.15f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
@@ -369,14 +394,13 @@ fun CellView(
 
     Box(
         modifier = Modifier
-            .size(48.dp)
-            .padding(4.dp)
+            .size(cellSize)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxSize(0.85f) // 85% del tamaño para dejar espacio entre celdas
                 .then(
                     if (isWinningCell) Modifier.scale(scale) else Modifier
                 )
@@ -393,24 +417,26 @@ fun ControlButtons(
     onSaveGame: () -> Unit
 ) {
     Column(
+        modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Button(
                 onClick = onResetGame,
                 colors = ButtonDefaults.buttonColors(containerColor = BoardBlue),
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Nueva Partida")
+                Text("Nueva Partida", fontSize = 12.sp)
             }
 
             OutlinedButton(
                 onClick = onResetAll,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Reiniciar Todo")
+                Text("Reiniciar Todo", fontSize = 12.sp)
             }
         }
 
@@ -421,10 +447,10 @@ fun ControlButtons(
             Icon(
                 Icons.Default.Save,
                 contentDescription = null,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(16.dp)
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Guardar Partida")
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("Guardar Partida", fontSize = 12.sp)
         }
     }
 }

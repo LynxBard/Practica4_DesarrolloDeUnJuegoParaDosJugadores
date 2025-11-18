@@ -4,7 +4,9 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -88,23 +90,24 @@ fun AIConfigScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp),
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     // Título decorativo
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(vertical = 16.dp)
+                        modifier = Modifier.padding(vertical = 8.dp)
                     ) {
                         Text(
                             text = "🤖",
-                            fontSize = 64.sp,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            fontSize = 48.sp,
+                            modifier = Modifier.padding(bottom = 4.dp)
                         )
                         Text(
                             text = "Configura tu rival",
-                            fontSize = 24.sp,
+                            fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = BoardBlue
                         )
@@ -116,15 +119,15 @@ fun AIConfigScreen(
                         onDifficultySelected = { selectedDifficulty = it }
                     )
 
-                    // Card de Orden de Juego
+                    // Card de Orden de Juego (ahora responsiva)
                     TurnOrderCard(
                         playerGoesFirst = playerGoesFirst,
                         onToggle = { playerGoesFirst = it }
                     )
 
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                    // Botón de inicio
+                    // Botón de inicio (responsivo)
                     StartGameButton(
                         onClick = {
                             onStartGame(selectedDifficulty, playerGoesFirst)
@@ -154,20 +157,20 @@ private fun DifficultyCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp)
+                .padding(16.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 12.dp)
             ) {
                 Text(
                     text = "⚙️",
-                    fontSize = 24.sp,
-                    modifier = Modifier.padding(end = 8.dp)
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(end = 6.dp)
                 )
                 Text(
                     text = "Dificultad",
-                    fontSize = 20.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = BoardBlue
                 )
@@ -241,13 +244,13 @@ private fun DifficultyOption(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = icon,
-                fontSize = 32.sp,
-                modifier = Modifier.padding(end = 16.dp)
+                fontSize = 28.sp,
+                modifier = Modifier.padding(end = 12.dp)
             )
 
             Column(
@@ -255,13 +258,13 @@ private fun DifficultyOption(
             ) {
                 Text(
                     text = label,
-                    fontSize = 18.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (selected) BoardBlue else Color.Black
                 )
                 Text(
                     text = description,
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     color = Color.Gray
                 )
             }
@@ -295,99 +298,127 @@ private fun TurnOrderCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp)
+                .padding(16.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 12.dp)
             ) {
                 Text(
                     text = "🎲",
-                    fontSize = 24.sp,
-                    modifier = Modifier.padding(end = 8.dp)
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(end = 6.dp)
                 )
                 Text(
                     text = "Orden de Juego",
-                    fontSize = 20.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = BoardBlue
                 )
             }
 
-            Row(
+            // Layout en columna para pantallas pequeñas
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // Opciones de jugador
                 Column(
-                    modifier = Modifier.weight(1f)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Opción: Yo empiezo
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(24.dp)
+                                .size(20.dp)
                                 .background(
                                     color = RedPlayer,
                                     shape = RoundedCornerShape(50)
                                 )
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = " Yo empiezo primero",
-                            fontSize = 16.sp,
+                            text = "Yo empiezo primero",
+                            fontSize = 14.sp,
                             fontWeight = if (playerGoesFirst) FontWeight.Bold else FontWeight.Normal,
-                            modifier = Modifier.padding(start = 8.dp)
+                            modifier = Modifier.weight(1f)
+                        )
+                        RadioButton(
+                            selected = playerGoesFirst,
+                            onClick = { onToggle(true) },
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = RedPlayer
+                            )
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
+                    // Opción: IA empieza
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(24.dp)
+                                .size(20.dp)
                                 .background(
                                     color = YellowPlayer,
                                     shape = RoundedCornerShape(50)
                                 )
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = " IA empieza primero",
-                            fontSize = 16.sp,
+                            text = "IA empieza primero",
+                            fontSize = 14.sp,
                             fontWeight = if (!playerGoesFirst) FontWeight.Bold else FontWeight.Normal,
-                            modifier = Modifier.padding(start = 8.dp)
+                            modifier = Modifier.weight(1f)
+                        )
+                        RadioButton(
+                            selected = !playerGoesFirst,
+                            onClick = { onToggle(false) },
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = YellowPlayer
+                            )
                         )
                     }
                 }
 
-                Switch(
-                    checked = playerGoesFirst,
-                    onCheckedChange = onToggle,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = RedPlayer,
-                        checkedTrackColor = RedPlayer.copy(alpha = 0.5f),
-                        uncheckedThumbColor = YellowPlayer,
-                        uncheckedTrackColor = YellowPlayer.copy(alpha = 0.5f)
-                    )
-                )
+                // Descripción
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (playerGoesFirst) {
+                            RedPlayer.copy(alpha = 0.1f)
+                        } else {
+                            YellowPlayer.copy(alpha = 0.1f)
+                        }
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (playerGoesFirst) "ℹ️" else "🤖",
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(
+                            text = if (playerGoesFirst) {
+                                "Tú (Rojo) comenzarás el juego"
+                            } else {
+                                "La IA (Amarillo) comenzará el juego"
+                            },
+                            fontSize = 13.sp,
+                            color = Color.DarkGray,
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
             }
-
-            Text(
-                text = if (playerGoesFirst) {
-                    "Tú (Rojo) comenzarás el juego"
-                } else {
-                    "La IA (Amarillo) comenzará el juego"
-                },
-                fontSize = 14.sp,
-                color = Color.Gray,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp)
-            )
         }
     }
 }
@@ -410,7 +441,7 @@ private fun StartGameButton(onClick: () -> Unit) {
         },
         modifier = Modifier
             .fillMaxWidth()
-            .height(60.dp)
+            .height(56.dp)
             .scale(scale),
         colors = ButtonDefaults.buttonColors(
             containerColor = BoardBlue
@@ -427,12 +458,12 @@ private fun StartGameButton(onClick: () -> Unit) {
         ) {
             Text(
                 text = "🎮",
-                fontSize = 24.sp,
+                fontSize = 20.sp,
                 modifier = Modifier.padding(end = 8.dp)
             )
             Text(
                 text = "Iniciar Juego",
-                fontSize = 20.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
         }
