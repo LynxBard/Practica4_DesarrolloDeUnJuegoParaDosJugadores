@@ -5,6 +5,7 @@ import com.example.practica4_juegopara2jugadores.model.GameState
 import com.example.practica4_juegopara2jugadores.model.GameState.Companion.COLUMNS
 import com.example.practica4_juegopara2jugadores.model.GameState.Companion.ROWS
 import com.example.practica4_juegopara2jugadores.model.GameState.Companion.WIN_LENGTH
+import com.example.practica4_juegopara2jugadores.model.Move
 import com.example.practica4_juegopara2jugadores.model.Player
 
 /**
@@ -40,10 +41,22 @@ object GameLogic {
             }
         }
 
+        // Crear el movimiento para el historial
+        val move = Move(
+            player = state.currentPlayer,
+            column = column,
+            row = row,
+            timestamp = System.currentTimeMillis()
+        )
+
+        // Agregar el movimiento al historial
+        val updatedMoveHistory = state.moveHistory + move
+
         // Crear el nuevo estado
         var newState = state.copy(
             board = newBoard,
-            lastMove = Pair(row, column)
+            lastMove = Pair(row, column),
+            moveHistory = updatedMoveHistory
         )
 
         // Verificar si hay un ganador
@@ -144,7 +157,8 @@ object GameLogic {
     fun resetGame(currentState: GameState): GameState {
         return GameState(
             redWins = currentState.redWins,
-            yellowWins = currentState.yellowWins
+            yellowWins = currentState.yellowWins,
+            gameMode = currentState.gameMode
         )
     }
 

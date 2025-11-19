@@ -123,8 +123,8 @@ fun MainMenuScreen(
                     )
 
                     MenuButton(
-                        text = "⚙️ Configuración",
-                        onClick = { /* TODO: Implementar configuración */ },
+                        text = "📊 Estadísticas",
+                        onClick = { onNavigate(Screen.Statistics) },
                         isPrimary = false
                     )
 

@@ -31,7 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.practica4_juegopara2jugadores.data.GameSaveRepository
-import com.example.practica4_juegopara2jugadores.data.bluetooth.BluetoothGameService // NUEVO
+import com.example.practica4_juegopara2jugadores.data.StatisticsRepository
+import com.example.practica4_juegopara2jugadores.data.bluetooth.BluetoothGameService
 import com.example.practica4_juegopara2jugadores.domain.ai.ConnectFourAI
 import com.example.practica4_juegopara2jugadores.model.GameMode
 import com.example.practica4_juegopara2jugadores.model.Player
@@ -43,6 +44,7 @@ import com.example.practica4_juegopara2jugadores.ui.screens.LoadGameScreen
 import com.example.practica4_juegopara2jugadores.ui.screens.MainMenuScreen
 import com.example.practica4_juegopara2jugadores.ui.screens.BluetoothSetupScreen
 import com.example.practica4_juegopara2jugadores.ui.screens.BluetoothGameScreen
+import com.example.practica4_juegopara2jugadores.ui.screens.StatisticsScreen
 import com.example.practica4_juegopara2jugadores.ui.theme.ConnectFourTheme
 import com.example.practica4_juegopara2jugadores.viewmodel.GameViewModel
 import com.example.practica4_juegopara2jugadores.viewmodel.NavigationViewModel
@@ -141,7 +143,7 @@ fun ConnectFourApp(
             )
         }
 
-        // NUEVO: Pantalla de configuración Bluetooth
+        // Pantalla de configuración Bluetooth
         is Screen.BluetoothSetup -> {
             BluetoothSetupScreen(
                 bluetoothService = bluetoothService,
@@ -166,14 +168,13 @@ fun ConnectFourApp(
         }
 
         is Screen.SaveLoadMenu -> {
-            // Nueva pantalla de carga de partidas
+            // Pantalla de carga de partidas
             val repository = remember { GameSaveRepository(context) }
 
             LoadGameScreen(
                 repository = repository,
                 onBack = { navigationViewModel.navigateBack() },
                 onLoadGame = { gameState ->
-                    // Cargar el juego según su modo
                     navigationViewModel.navigateToLoadedGame(gameState)
                 },
                 onNewGame = {
@@ -193,7 +194,6 @@ fun ConnectFourApp(
                         aiPlayer = Player.YELLOW
                     )
                     GameViewModel(ai, playerGoesFirst = true).apply {
-                        // Cargar el estado guardado
                         loadGameState(loadedState)
                     }
                 }
@@ -209,6 +209,16 @@ fun ConnectFourApp(
                 viewModel = gameViewModel,
                 onBack = { navigationViewModel.navigateBack() },
                 showAIIndicator = loadedState.gameMode == GameMode.SINGLE_PLAYER
+            )
+        }
+
+        // NUEVO: Pantalla de estadísticas
+        is Screen.Statistics -> {
+            val statsRepository = remember { StatisticsRepository(context) }
+
+            StatisticsScreen(
+                repository = statsRepository,
+                onBack = { navigationViewModel.navigateBack() }
             )
         }
     }

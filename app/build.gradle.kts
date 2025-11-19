@@ -80,6 +80,9 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
 
+    // DataStore para estadísticas persistentes
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -31,10 +33,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.practica4_juegopara2jugadores.data.GameSaveRepository
+import com.example.practica4_juegopara2jugadores.data.StatisticsRepository
 import com.example.practica4_juegopara2jugadores.model.Cell
 import com.example.practica4_juegopara2jugadores.model.GameMode
 import com.example.practica4_juegopara2jugadores.model.GameState
 import com.example.practica4_juegopara2jugadores.model.Player
+import com.example.practica4_juegopara2jugadores.ui.screens.MoveHistoryScreen
 import com.example.practica4_juegopara2jugadores.ui.screens.SaveGameScreen
 import com.example.practica4_juegopara2jugadores.viewmodel.GameViewModel
 import kotlinx.coroutines.launch
@@ -58,10 +62,43 @@ fun GameScreen(
     val isAIThinking by viewModel.isAIThinking.collectAsState()
     val context = LocalContext.current
 
-    // Estado para mostrar el diálogo de guardar
+    // Estado para mostrar diálogos
     var showSaveDialog by remember { mutableStateOf(false) }
+    var showHistoryDialog by remember { mutableStateOf(false) }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    // Repositorio de estadísticas
+    val statsRepository = remember { StatisticsRepository(context) }
+
+    // Variable para rastrear si ya se actualizaron las estadísticas
+    var statsUpdated by remember { mutableStateOf(false) }
+
+    // Actualizar estadísticas cuando el juego termina (solo una vez)
+    LaunchedEffect(gameState.isGameOver()) {
+        if (gameState.isGameOver() && !statsUpdated && gameState.moveHistory.isNotEmpty()) {
+            statsUpdated = true
+
+            // Determinar dificultad si es contra IA (puedes guardarlo en el ViewModel)
+            val aiDifficulty = if (gameState.gameMode == GameMode.SINGLE_PLAYER) {
+                "MEDIUM" // Valor por defecto, idealmente obtenlo del ViewModel
+            } else null
+
+            statsRepository.updateAfterGame(
+                gameMode = gameState.gameMode,
+                winner = gameState.winner,
+                isDraw = gameState.isDraw,
+                gameTimeSeconds = gameState.elapsedTimeSeconds,
+                aiDifficulty = aiDifficulty
+            )
+        }
+
+        // Resetear cuando comience un nuevo juego
+        if (!gameState.isGameOver()) {
+            statsUpdated = false
+        }
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -83,6 +120,49 @@ fun GameScreen(
                         }
                     },
                     actions = {
+                        // Mostrar temporizador
+                        Surface(
+                            color = Color.White.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Text(
+                                text = viewModel.formatElapsedTime(gameState.elapsedTimeSeconds),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                fontFamily = FontFamily.Monospace,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            )
+                        }
+
+                        // Botón para ver historial con badge
+                        BadgedBox(
+                            badge = {
+                                if (gameState.moveHistory.isNotEmpty()) {
+                                    Badge(
+                                        containerColor = YellowPlayer
+                                    ) {
+                                        Text(
+                                            gameState.moveHistory.size.toString(),
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
+                            IconButton(
+                                onClick = { showHistoryDialog = true }
+                            ) {
+                                Icon(
+                                    Icons.Default.History,
+                                    contentDescription = "Historial",
+                                    tint = Color.White
+                                )
+                            }
+                        }
+
                         // Botón para guardar partida
                         IconButton(
                             onClick = { showSaveDialog = true }
@@ -191,6 +271,31 @@ fun GameScreen(
                             )
                         }
                     }
+                )
+            }
+        }
+    }
+
+    // Diálogo de historial de movimientos
+    if (showHistoryDialog) {
+        Dialog(
+            onDismissRequest = { showHistoryDialog = false },
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false
+            )
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(0.95f)
+                    .fillMaxHeight(0.85f),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                MoveHistoryScreen(
+                    moves = gameState.moveHistory,
+                    elapsedTimeSeconds = gameState.elapsedTimeSeconds,
+                    onBack = { showHistoryDialog = false },
+                    onUndoMove = null // Puedes implementar deshacer si lo deseas
                 )
             }
         }
@@ -329,8 +434,7 @@ fun GameBoard(
     val screenWidthDp = configuration.screenWidthDp.dp
 
     // Calcular tamaño de celda basado en ancho de pantalla
-    // Dejar espacio para padding del Card (16dp * 2) y padding entre celdas
-    val availableWidth = screenWidthDp - 36.dp - 18.dp // Card padding + margen
+    val availableWidth = screenWidthDp - 36.dp - 18.dp
     val cellSize = min((availableWidth / GameState.COLUMNS).value, 52f).dp
 
     Card(
@@ -400,7 +504,7 @@ fun CellView(
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize(0.85f) // 85% del tamaño para dejar espacio entre celdas
+                .fillMaxSize(0.85f)
                 .then(
                     if (isWinningCell) Modifier.scale(scale) else Modifier
                 )
