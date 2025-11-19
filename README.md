@@ -52,7 +52,7 @@ Una implementación moderna y completa del clásico juego Conecta Cuatro desarro
 1. Clona el repositorio:
 
 ```bash
-git clone https://github.com/tuusuario/connect-four.git
+git clone https://github.com/LynxBard/Practica4_DesarrolloDeUnJuegoParaDosJugadores.git
 cd connect-four
 ```
 
