@@ -25,9 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.practica4_juegopara2jugadores.model.Move
 import com.example.practica4_juegopara2jugadores.model.Player
-import com.example.practica4_juegopara2jugadores.ui.BoardBlue
-import com.example.practica4_juegopara2jugadores.ui.RedPlayer
-import com.example.practica4_juegopara2jugadores.ui.YellowPlayer
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,7 +71,7 @@ fun MoveHistoryScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BoardBlue,
+                    containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
@@ -145,7 +142,7 @@ private fun HistoryStatistics(
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -159,7 +156,7 @@ private fun HistoryStatistics(
                 icon = Icons.Default.Timer,
                 label = "Tiempo",
                 value = formatTime(elapsedTimeSeconds),
-                color = BoardBlue
+                color = MaterialTheme.colorScheme.primary
             )
 
             VerticalDivider(modifier = Modifier.height(40.dp))
@@ -221,7 +218,7 @@ private fun MoveItem(
     move: Move,
     isLatest: Boolean
 ) {
-    val playerColor = if (move.player == Player.RED) RedPlayer else YellowPlayer
+    val playerColor = if (move.player == Player.RED) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary
     val scale by animateFloatAsState(
         targetValue = if (isLatest) 1.02f else 1f,
         animationSpec = spring(
@@ -242,7 +239,7 @@ private fun MoveItem(
             containerColor = if (isLatest) {
                 playerColor.copy(alpha = 0.1f)
             } else {
-                Color.White
+                MaterialTheme.colorScheme.surface
             }
         ),
         elevation = CardDefaults.cardElevation(
@@ -329,7 +326,7 @@ private fun MoveItem(
 
             // Tiempo del movimiento
             Surface(
-                color = Color(0xFFF5F5F5),
+                color = MaterialTheme.colorScheme.background,
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Row(

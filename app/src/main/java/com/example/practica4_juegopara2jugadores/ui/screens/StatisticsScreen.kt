@@ -28,10 +28,26 @@ import androidx.compose.ui.unit.sp
 import com.example.practica4_juegopara2jugadores.data.GameStatistics
 import com.example.practica4_juegopara2jugadores.data.StatisticsRepository
 import com.example.practica4_juegopara2jugadores.model.Player
-import com.example.practica4_juegopara2jugadores.ui.BoardBlue
-import com.example.practica4_juegopara2jugadores.ui.RedPlayer
-import com.example.practica4_juegopara2jugadores.ui.YellowPlayer
 import kotlinx.coroutines.launch
+
+// Color del tablero - usa el primary del tema
+val BoardBlue
+    @Composable
+    get() = MaterialTheme.colorScheme.primary
+
+// Color del fondo de la app
+val BackgroundColor
+    @Composable
+    get() = MaterialTheme.colorScheme.background
+
+// Colores de los jugadores - usan tertiary y secondary del tema
+val RedPlayer
+    @Composable
+    get() = MaterialTheme.colorScheme.tertiary
+
+val YellowPlayer
+    @Composable
+    get() = MaterialTheme.colorScheme.secondary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -173,7 +189,7 @@ private fun GeneralStatsCard(stats: GameStatistics) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -229,7 +245,7 @@ private fun GeneralStatsCard(stats: GameStatistics) {
 private fun WinsChartCard(stats: GameStatistics) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -302,7 +318,7 @@ private fun WinsBarChart(
                 // Barra Roja
                 val redBarHeight = (redWins.toFloat() / maxWins) * maxBarHeight
                 drawRoundRect(
-                    color = RedPlayer,
+                    color = Color(0xFFFF5252),
                     topLeft = Offset(spacing, size.height - redBarHeight),
                     size = Size(barWidth, redBarHeight),
                     cornerRadius = androidx.compose.ui.geometry.CornerRadius(8.dp.toPx())
@@ -311,7 +327,7 @@ private fun WinsBarChart(
                 // Barra Amarilla
                 val yellowBarHeight = (yellowWins.toFloat() / maxWins) * maxBarHeight
                 drawRoundRect(
-                    color = YellowPlayer,
+                    color = Color(0xFFFFC107),
                     topLeft = Offset(size.width - spacing - barWidth, size.height - yellowBarHeight),
                     size = Size(barWidth, yellowBarHeight),
                     cornerRadius = androidx.compose.ui.geometry.CornerRadius(8.dp.toPx())
@@ -366,7 +382,7 @@ private fun LegendItem(
 private fun GameModeStatsCard(stats: GameStatistics) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -430,7 +446,7 @@ private fun ModeStatRow(
 private fun AIStatsCard(stats: GameStatistics) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -504,7 +520,7 @@ private fun StreakCard(stats: GameStatistics) {
             containerColor = if (stats.currentStreak > 0) {
                 Color(0xFFFFC107).copy(alpha = 0.1f)
             } else {
-                Color.White
+                MaterialTheme.colorScheme.surface
             }
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -604,7 +620,7 @@ private fun StreakBox(
 private fun TimeStatsCard(stats: GameStatistics) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(

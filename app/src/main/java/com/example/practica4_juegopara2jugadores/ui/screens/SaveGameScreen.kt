@@ -23,7 +23,6 @@ import com.example.practica4_juegopara2jugadores.data.GameSaveRepository
 import com.example.practica4_juegopara2jugadores.model.GameState
 import com.example.practica4_juegopara2jugadores.model.SaveFormat
 import com.example.practica4_juegopara2jugadores.model.toSaveData
-import com.example.practica4_juegopara2jugadores.ui.BoardBlue
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -63,7 +62,7 @@ fun SaveGameScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BoardBlue,
+                    containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
@@ -82,7 +81,7 @@ fun SaveGameScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
@@ -96,7 +95,7 @@ fun SaveGameScreen(
                         Icon(
                             Icons.Default.Edit,
                             contentDescription = null,
-                            tint = BoardBlue,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -148,7 +147,7 @@ fun SaveGameScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
@@ -162,7 +161,7 @@ fun SaveGameScreen(
                         Icon(
                             Icons.Default.Settings,
                             contentDescription = null,
-                            tint = BoardBlue,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -192,7 +191,7 @@ fun SaveGameScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
@@ -208,7 +207,7 @@ fun SaveGameScreen(
                             Icon(
                                 Icons.Default.Info,
                                 contentDescription = null,
-                                tint = BoardBlue,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -237,7 +236,7 @@ fun SaveGameScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .heightIn(max = 200.dp),
-                            color = Color(0xFFF5F5F5),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             val previewContent = remember(selectedFormat) {
@@ -304,7 +303,7 @@ fun SaveGameScreen(
                     .height(56.dp),
                 enabled = !isLoading && fileName.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = BoardBlue
+                    containerColor = MaterialTheme.colorScheme.primary
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -363,7 +362,7 @@ private fun FormatOption(
             containerColor = if (selected) {
                 containerColor.copy(alpha = 0.2f)
             } else {
-                Color(0xFFF5F5F5)
+                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
             }
         ),
         shape = RoundedCornerShape(12.dp),

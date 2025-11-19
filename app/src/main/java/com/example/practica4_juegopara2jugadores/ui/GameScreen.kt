@@ -44,12 +44,41 @@ import com.example.practica4_juegopara2jugadores.viewmodel.GameViewModel
 import kotlinx.coroutines.launch
 import kotlin.math.min
 
-// Colores del juego
-val RedPlayer = Color(0xFFE53935)
-val YellowPlayer = Color(0xFFFDD835)
-val BoardBlue = Color(0xFF1976D2)
-val BackgroundColor = Color(0xFFF5F5F5)
-val EmptyCell = Color(0xFFFFFFFF)
+// Color del tablero - usa el primary del tema
+val BoardBlue
+    @Composable
+    get() = MaterialTheme.colorScheme.primary
+
+// Color del fondo de la app
+val BackgroundColor
+    @Composable
+    get() = MaterialTheme.colorScheme.background
+
+// Color para las celdas vacías
+val EmptyCell
+    @Composable
+    get() = MaterialTheme.colorScheme.surface
+
+// Colores de los jugadores - usan tertiary y secondary del tema
+val RedPlayer
+    @Composable
+    get() = MaterialTheme.colorScheme.tertiary
+
+val YellowPlayer
+    @Composable
+    get() = MaterialTheme.colorScheme.secondary
+
+/**
+ * Versiones estáticas para uso en objetos (fallback)
+ * Solo se usan en casos donde no hay contexto de Composable
+ */
+object StaticColors {
+    val RedPlayerStatic = Color(0xFFE53935)
+    val YellowPlayerStatic = Color(0xFFFDD835)
+    val BoardBlueStatic = Color(0xFF1976D2)
+    val BackgroundColorStatic = Color(0xFFF5F5F5)
+    val EmptyCellStatic = Color(0xFFFFFFFF)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -367,7 +396,7 @@ fun PlayerScore(
             .width(150.dp)
             .scale(scale),
         colors = CardDefaults.cardColors(
-            containerColor = if (isCurrentPlayer) playerColor.copy(alpha = 0.2f) else Color.White
+            containerColor = if (isCurrentPlayer) playerColor.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (isCurrentPlayer) 8.dp else 2.dp

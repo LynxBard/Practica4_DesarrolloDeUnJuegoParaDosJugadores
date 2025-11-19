@@ -36,8 +36,6 @@ import androidx.compose.ui.unit.sp
 import com.example.practica4_juegopara2jugadores.data.bluetooth.BluetoothGameService
 import com.example.practica4_juegopara2jugadores.data.bluetooth.BluetoothResult
 import com.example.practica4_juegopara2jugadores.data.bluetooth.ConnectionState
-import com.example.practica4_juegopara2jugadores.ui.BoardBlue
-import com.example.practica4_juegopara2jugadores.ui.YellowPlayer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -149,7 +147,7 @@ fun BluetoothSetupScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BoardBlue,
+                    containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
@@ -164,8 +162,8 @@ fun BluetoothSetupScreen(
             // TabRow
             TabRow(
                 selectedTabIndex = selectedTab,
-                containerColor = Color.White,
-                contentColor = BoardBlue
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary
             ) {
                 Tab(
                     selected = selectedTab == 0,
@@ -270,7 +268,7 @@ private fun CreateGameTab(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        BoardBlue.copy(alpha = 0.05f),
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
                         Color.White
                     )
                 )
@@ -301,7 +299,7 @@ private fun CreateGameTab(
                         text = "Crear Nueva Partida",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = BoardBlue
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -309,7 +307,7 @@ private fun CreateGameTab(
             // Campo de nombre del host
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(
@@ -320,7 +318,7 @@ private fun CreateGameTab(
                         Icon(
                             Icons.Default.Person,
                             contentDescription = null,
-                            tint = BoardBlue,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
@@ -356,7 +354,7 @@ private fun CreateGameTab(
                             "3️⃣ Espera en esta pantalla",
                             "4️⃣ El otro jugador debe buscarte y conectarse"
                         ),
-                        backgroundColor = BoardBlue.copy(alpha = 0.1f)
+                        backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                     )
 
                     // Botón para hacer visible
@@ -387,7 +385,7 @@ private fun CreateGameTab(
                             .height(54.dp),
                         enabled = hostName.isNotBlank() && connectionState !is ConnectionState.Connecting,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = BoardBlue
+                            containerColor = MaterialTheme.colorScheme.primary
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -432,7 +430,7 @@ private fun CreateGameTab(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = YellowPlayer.copy(alpha = 0.1f)
+                    containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
                 )
             ) {
                 Row(
@@ -442,7 +440,7 @@ private fun CreateGameTab(
                     Icon(
                         Icons.Default.Info,
                         contentDescription = null,
-                        tint = YellowPlayer.copy(alpha = 0.7f),
+                        tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f),
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
@@ -476,7 +474,7 @@ private fun JoinGameTab(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        BoardBlue.copy(alpha = 0.05f),
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
                         Color.White
                     )
                 )
@@ -531,7 +529,7 @@ private fun JoinGameTab(
                     .height(54.dp),
                 enabled = connectionState !is ConnectionState.Connected && !isScanning,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = BoardBlue
+                    containerColor = MaterialTheme.colorScheme.primary
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -627,7 +625,7 @@ private fun DevicesList(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -644,7 +642,7 @@ private fun DevicesList(
                     Icon(
                         Icons.Default.Phone,
                         contentDescription = null,
-                        tint = BoardBlue,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
@@ -659,7 +657,7 @@ private fun DevicesList(
                     CircularProgressIndicator(
                         modifier = Modifier.size(18.dp),
                         strokeWidth = 2.dp,
-                        color = BoardBlue
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -756,7 +754,7 @@ private fun DeviceItem(
                     modifier = Modifier
                         .size(44.dp)
                         .background(
-                            color = BoardBlue.copy(alpha = 0.1f),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                             shape = CircleShape
                         ),
                     contentAlignment = Alignment.Center
@@ -764,7 +762,7 @@ private fun DeviceItem(
                     Icon(
                         Icons.Default.Phone,
                         contentDescription = null,
-                        tint = BoardBlue,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -810,7 +808,7 @@ private fun WaitingForConnectionCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = BoardBlue.copy(alpha = 0.1f)
+            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
         )
     ) {
         Column(
@@ -824,7 +822,7 @@ private fun WaitingForConnectionCard() {
                 modifier = Modifier
                     .size(44.dp)
                     .scale(alpha),
-                color = BoardBlue,
+                color = MaterialTheme.colorScheme.primary,
                 strokeWidth = 3.dp
             )
 
@@ -832,7 +830,7 @@ private fun WaitingForConnectionCard() {
                 text = "⏳ Esperando conexión...",
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
-                color = BoardBlue
+                color = MaterialTheme.colorScheme.primary
             )
 
             Text(
@@ -851,7 +849,7 @@ private fun ConnectingCard(deviceName: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = YellowPlayer.copy(alpha = 0.1f)
+            containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
         )
     ) {
         Row(
@@ -863,7 +861,7 @@ private fun ConnectingCard(deviceName: String) {
             CircularProgressIndicator(
                 modifier = Modifier.size(28.dp),
                 strokeWidth = 3.dp,
-                color = YellowPlayer.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f)
             )
 
             Spacer(modifier = Modifier.width(14.dp))
@@ -986,7 +984,7 @@ private fun PermissionRationaleDialog(
                 Icons.Default.Info,
                 contentDescription = null,
                 modifier = Modifier.size(48.dp),
-                tint = BoardBlue
+                tint = MaterialTheme.colorScheme.primary
             )
         },
         title = {
@@ -1008,7 +1006,7 @@ private fun PermissionRationaleDialog(
             Button(
                 onClick = onRequestPermissions,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = BoardBlue
+                    containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
                 Text("Otorgar Permisos")

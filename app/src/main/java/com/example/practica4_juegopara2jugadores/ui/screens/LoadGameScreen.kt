@@ -24,9 +24,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.practica4_juegopara2jugadores.data.GameSaveRepository
 import com.example.practica4_juegopara2jugadores.model.*
-import com.example.practica4_juegopara2jugadores.ui.BoardBlue
-import com.example.practica4_juegopara2jugadores.ui.RedPlayer
-import com.example.practica4_juegopara2jugadores.ui.YellowPlayer
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
@@ -82,7 +79,7 @@ fun LoadGameScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BoardBlue,
+                    containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White,
                     actionIconContentColor = Color.White
@@ -92,7 +89,7 @@ fun LoadGameScreen(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = onNewGame,
-                containerColor = BoardBlue,
+                containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = Color.White
             ) {
                 Icon(Icons.Default.Add, contentDescription = null)
@@ -252,7 +249,7 @@ private fun SavedGameCard(
             .fillMaxWidth()
             .scale(scale),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (expanded) 8.dp else 2.dp
@@ -306,7 +303,7 @@ private fun SavedGameCard(
                 InfoChip(
                     icon = Icons.Default.Star,
                     text = gameInfo.gameMode,
-                    color = BoardBlue
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 InfoChip(
@@ -342,7 +339,7 @@ private fun SavedGameCard(
                             .fillMaxWidth()
                             .height(100.dp)
                             .background(
-                                color = BoardBlue.copy(alpha = 0.1f),
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                                 shape = RoundedCornerShape(8.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -441,7 +438,7 @@ private fun LoadingState() {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             CircularProgressIndicator(
-                color = BoardBlue,
+                color = MaterialTheme.colorScheme.primary,
                 strokeWidth = 3.dp
             )
             Text(
@@ -485,7 +482,7 @@ private fun EmptyState(onNewGame: () -> Unit) {
             Button(
                 onClick = onNewGame,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = BoardBlue
+                    containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
                 Icon(Icons.Default.Add, contentDescription = null)
@@ -526,7 +523,7 @@ private fun ErrorState(message: String, onRetry: () -> Unit) {
             Button(
                 onClick = onRetry,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = BoardBlue
+                    containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
                 Icon(Icons.Default.Refresh, contentDescription = null)

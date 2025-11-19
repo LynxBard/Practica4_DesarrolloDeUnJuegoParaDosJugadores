@@ -21,6 +21,9 @@ sealed class Screen {
     object SaveLoadMenu : Screen()
     data class LoadedGame(val gameState: GameState) : Screen()
 
-    // NUEVO: Pantalla de estadísticas
+    // Pantalla de estadísticas
     object Statistics : Screen()
+
+    // NUEVO: Pantalla de configuración
+    object Settings : Screen()
 }

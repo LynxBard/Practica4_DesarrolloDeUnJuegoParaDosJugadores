@@ -21,9 +21,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.practica4_juegopara2jugadores.domain.ai.Difficulty
-import com.example.practica4_juegopara2jugadores.ui.BoardBlue
-import com.example.practica4_juegopara2jugadores.ui.RedPlayer
-import com.example.practica4_juegopara2jugadores.ui.YellowPlayer
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,7 +56,7 @@ fun AIConfigScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BoardBlue,
+                    containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
@@ -73,7 +70,7 @@ fun AIConfigScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            BoardBlue.copy(alpha = 0.05f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
                             Color.White
                         )
                     )
@@ -109,7 +106,7 @@ fun AIConfigScreen(
                             text = "Configura tu rival",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = BoardBlue
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
 
@@ -147,7 +144,7 @@ private fun DifficultyCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 4.dp
@@ -172,7 +169,7 @@ private fun DifficultyCard(
                     text = "Dificultad",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = BoardBlue
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -234,9 +231,9 @@ private fun DifficultyOption(
             .scale(scale),
         colors = CardDefaults.cardColors(
             containerColor = if (selected) {
-                BoardBlue.copy(alpha = 0.1f)
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
             } else {
-                Color(0xFFF5F5F5)
+                MaterialTheme.colorScheme.surface
             }
         ),
         shape = RoundedCornerShape(12.dp)
@@ -260,7 +257,7 @@ private fun DifficultyOption(
                     text = label,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (selected) BoardBlue else Color.Black
+                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = description,
@@ -273,7 +270,7 @@ private fun DifficultyOption(
                 selected = selected,
                 onClick = onClick,
                 colors = RadioButtonDefaults.colors(
-                    selectedColor = BoardBlue
+                    selectedColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
@@ -288,7 +285,7 @@ private fun TurnOrderCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 4.dp
@@ -313,7 +310,7 @@ private fun TurnOrderCard(
                     text = "Orden de Juego",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = BoardBlue
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -334,7 +331,7 @@ private fun TurnOrderCard(
                             modifier = Modifier
                                 .size(20.dp)
                                 .background(
-                                    color = RedPlayer,
+                                    color = MaterialTheme.colorScheme.tertiary,
                                     shape = RoundedCornerShape(50)
                                 )
                         )
@@ -349,7 +346,7 @@ private fun TurnOrderCard(
                             selected = playerGoesFirst,
                             onClick = { onToggle(true) },
                             colors = RadioButtonDefaults.colors(
-                                selectedColor = RedPlayer
+                                selectedColor = MaterialTheme.colorScheme.tertiary
                             )
                         )
                     }
@@ -362,7 +359,7 @@ private fun TurnOrderCard(
                             modifier = Modifier
                                 .size(20.dp)
                                 .background(
-                                    color = YellowPlayer,
+                                    color = MaterialTheme.colorScheme.secondary,
                                     shape = RoundedCornerShape(50)
                                 )
                         )
@@ -377,7 +374,7 @@ private fun TurnOrderCard(
                             selected = !playerGoesFirst,
                             onClick = { onToggle(false) },
                             colors = RadioButtonDefaults.colors(
-                                selectedColor = YellowPlayer
+                                selectedColor = MaterialTheme.colorScheme.secondary
                             )
                         )
                     }
@@ -388,9 +385,9 @@ private fun TurnOrderCard(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
                         containerColor = if (playerGoesFirst) {
-                            RedPlayer.copy(alpha = 0.1f)
+                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f)
                         } else {
-                            YellowPlayer.copy(alpha = 0.1f)
+                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
                         }
                     ),
                     shape = RoundedCornerShape(8.dp)
@@ -413,7 +410,7 @@ private fun TurnOrderCard(
                                 "La IA (Amarillo) comenzará el juego"
                             },
                             fontSize = 13.sp,
-                            color = Color.DarkGray,
+                            color = MaterialTheme.colorScheme.onSurface,
                             lineHeight = 16.sp
                         )
                     }
@@ -444,7 +441,7 @@ private fun StartGameButton(onClick: () -> Unit) {
             .height(56.dp)
             .scale(scale),
         colors = ButtonDefaults.buttonColors(
-            containerColor = BoardBlue
+            containerColor = MaterialTheme.colorScheme.primary
         ),
         shape = RoundedCornerShape(16.dp),
         elevation = ButtonDefaults.buttonElevation(
