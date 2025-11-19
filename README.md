@@ -107,15 +107,6 @@ La IA utiliza el algoritmo **Minimax con poda Alpha-Beta** para tomar decisiones
 - **Poda Alpha-Beta:** Optimiza el algoritmo descartando ramas que no pueden mejorar el resultado
 - **Función de Evaluación:** Asigna valores a las posiciones del tablero basándose en patrones estratégicos
 
-## 🎨 Personalización
-
-El juego incluye múltiples opciones de personalización:
-
-- Temas visuales (Clásico, Neón, Retro, Minimalista)
-- Efectos de sonido y música
-- Animaciones (activar/desactivar)
-- Colores de fichas personalizables
-
 
 ## 📝 Licencia
 
