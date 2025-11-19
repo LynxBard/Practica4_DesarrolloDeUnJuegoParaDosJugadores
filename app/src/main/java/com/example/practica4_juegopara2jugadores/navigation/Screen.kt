@@ -13,10 +13,17 @@ sealed class Screen {
         val playerGoesFirst: Boolean
     ) : Screen()
 
-    // NUEVO: Pantallas Bluetooth
+    // Pantallas Bluetooth
     object BluetoothSetup : Screen()
     data class BluetoothGame(val isHost: Boolean) : Screen()
 
+    // Partidas guardadas
     object SaveLoadMenu : Screen()
     data class LoadedGame(val gameState: GameState) : Screen()
+
+    // Pantalla de estadísticas
+    object Statistics : Screen()
+
+    // NUEVO: Pantalla de configuración
+    object Settings : Screen()
 }

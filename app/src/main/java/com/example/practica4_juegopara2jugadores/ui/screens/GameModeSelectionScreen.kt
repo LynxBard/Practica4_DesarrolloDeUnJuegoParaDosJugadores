@@ -19,8 +19,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.practica4_juegopara2jugadores.navigation.Screen
-import com.example.practica4_juegopara2jugadores.ui.BoardBlue
-import com.example.practica4_juegopara2jugadores.ui.YellowPlayer
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,7 +52,7 @@ fun GameModeSelectionScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BoardBlue,
+                    containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
@@ -68,7 +66,7 @@ fun GameModeSelectionScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            BoardBlue.copy(alpha = 0.05f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
                             Color.White
                         )
                     )
@@ -164,9 +162,9 @@ private fun GameModeCard(
             .scale(scale),
         colors = CardDefaults.cardColors(
             containerColor = if (isPrimary) {
-                BoardBlue.copy(alpha = 0.95f)
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.95f)
             } else {
-                Color.White
+                MaterialTheme.colorScheme.surface
             }
         ),
         elevation = CardDefaults.cardElevation(
@@ -188,7 +186,7 @@ private fun GameModeCard(
                         color = if (isPrimary) {
                             Color.White.copy(alpha = 0.2f)
                         } else {
-                            BoardBlue.copy(alpha = 0.1f)
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                         },
                         shape = RoundedCornerShape(16.dp)
                     ),
@@ -211,7 +209,7 @@ private fun GameModeCard(
                     text = title,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isPrimary) Color.White else BoardBlue,
+                    color = if (isPrimary) Color.White else MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
                 Text(

@@ -16,9 +16,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.practica4_juegopara2jugadores.navigation.Screen
-import com.example.practica4_juegopara2jugadores.ui.BoardBlue
-import com.example.practica4_juegopara2jugadores.ui.RedPlayer
-import com.example.practica4_juegopara2jugadores.ui.YellowPlayer
 import kotlinx.coroutines.delay
 import kotlin.system.exitProcess
 
@@ -42,8 +39,8 @@ fun MainMenuScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        BoardBlue.copy(alpha = 0.1f),
-                        Color.White
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        MaterialTheme.colorScheme.background
                     )
                 )
             )
@@ -74,7 +71,7 @@ fun MainMenuScreen(
                         text = "Connect Four",
                         fontSize = 48.sp,
                         fontWeight = FontWeight.Bold,
-                        color = BoardBlue,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
 
@@ -88,7 +85,10 @@ fun MainMenuScreen(
                                 modifier = Modifier
                                     .size(16.dp)
                                     .background(
-                                        color = if (index % 2 == 0) RedPlayer else YellowPlayer,
+                                        color = if (index % 2 == 0)
+                                            MaterialTheme.colorScheme.tertiary
+                                        else
+                                            MaterialTheme.colorScheme.secondary,
                                         shape = RoundedCornerShape(50)
                                     )
                             )
@@ -123,8 +123,14 @@ fun MainMenuScreen(
                     )
 
                     MenuButton(
+                        text = "📊 Estadísticas",
+                        onClick = { onNavigate(Screen.Statistics) },
+                        isPrimary = false
+                    )
+
+                    MenuButton(
                         text = "⚙️ Configuración",
-                        onClick = { /* TODO: Implementar configuración */ },
+                        onClick = { onNavigate(Screen.Settings) },
                         isPrimary = false
                     )
 
@@ -153,7 +159,8 @@ private fun MenuButton(
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessHigh
-        )
+        ),
+        label = "button_scale"
     )
 
     Card(
@@ -168,8 +175,8 @@ private fun MenuButton(
         colors = CardDefaults.cardColors(
             containerColor = when {
                 isDestructive -> Color(0xFFFF5252).copy(alpha = 0.1f)
-                isPrimary -> BoardBlue
-                else -> Color.White
+                isPrimary -> MaterialTheme.colorScheme.primary
+                else -> MaterialTheme.colorScheme.surface
             }
         ),
         elevation = CardDefaults.cardElevation(
@@ -187,8 +194,8 @@ private fun MenuButton(
                 fontWeight = if (isPrimary) FontWeight.Bold else FontWeight.Medium,
                 color = when {
                     isDestructive -> Color(0xFFD32F2F)
-                    isPrimary -> Color.White
-                    else -> BoardBlue
+                    isPrimary -> MaterialTheme.colorScheme.onPrimary
+                    else -> MaterialTheme.colorScheme.primary
                 }
             )
         }

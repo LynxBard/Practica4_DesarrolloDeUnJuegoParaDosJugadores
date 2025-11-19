@@ -112,7 +112,7 @@ fun BluetoothGameScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BoardBlue,
+                    containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White,
                     actionIconContentColor = Color.White
@@ -298,7 +298,7 @@ private fun BluetoothPlayerScore(
     label: String,
     isMe: Boolean
 ) {
-    val playerColor = if (player == Player.RED) RedPlayer else YellowPlayer
+    val playerColor = if (player == Player.RED) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary
     val scale by animateFloatAsState(
         targetValue = if (isCurrentPlayer) 1.1f else 1f,
         animationSpec = spring(
@@ -382,7 +382,7 @@ private fun BluetoothGameBoard(
                 .fillMaxWidth()
                 .padding(bottom = 12.dp),
             colors = CardDefaults.cardColors(
-                containerColor = YellowPlayer.copy(alpha = 0.1f)
+                containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
             )
         ) {
             Row(
@@ -395,7 +395,7 @@ private fun BluetoothGameBoard(
                 CircularProgressIndicator(
                     modifier = Modifier.size(18.dp),
                     strokeWidth = 2.dp,
-                    color = YellowPlayer
+                    color = MaterialTheme.colorScheme.secondary
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
@@ -421,7 +421,7 @@ private fun BluetoothGameBoard(
         modifier = Modifier
             .wrapContentSize()
             .shadow(8.dp, RoundedCornerShape(16.dp)),
-        colors = CardDefaults.cardColors(containerColor = BoardBlue)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
     ) {
         Column(
             modifier = Modifier.padding(8.dp),
@@ -476,8 +476,8 @@ private fun BluetoothCellView(
     val cellColor = when (cell) {
         is Cell.Empty -> EmptyCell
         is Cell.Occupied -> when (cell.player) {
-            Player.RED -> RedPlayer
-            Player.YELLOW -> YellowPlayer
+            Player.RED -> MaterialTheme.colorScheme.tertiary
+            Player.YELLOW -> MaterialTheme.colorScheme.secondary
         }
     }
 
@@ -516,7 +516,7 @@ private fun BluetoothControlButtons(
     ) {
         Button(
             onClick = onResetGame,
-            colors = ButtonDefaults.buttonColors(containerColor = BoardBlue),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(
@@ -585,7 +585,7 @@ private fun BluetoothWinnerDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (!gameState.isDraw) {
-                    val winnerColor = if (gameState.winner == Player.RED) RedPlayer else YellowPlayer
+                    val winnerColor = if (gameState.winner == Player.RED) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary
                     val winnerText = if (didIWin) "¡Felicidades!" else "El oponente ganó"
 
                     Box(
@@ -613,7 +613,7 @@ private fun BluetoothWinnerDialog(
         confirmButton = {
             Button(
                 onClick = onNewGame,
-                colors = ButtonDefaults.buttonColors(containerColor = BoardBlue)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text("Nueva Partida")
             }

@@ -5,38 +5,87 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF1976D2),
-    secondary = Color(0xFFFDD835),
-    tertiary = Color(0xFFE53935),
-    background = Color(0xFFF5F5F5),
-    surface = Color(0xFFFFFFFF),
-    onPrimary = Color.White,
+// ============ Esquemas de Color para Tema Azul ESCOM ============
+
+private val AzulLightColorScheme = lightColorScheme(
+    primary = AzulColors.AzulLight,
+    secondary = AzulColors.YellowLight,
+    tertiary = AzulColors.RedLight,
+    background = AzulColors.AzulLightBackground,
+    surface = AzulColors.AzulLightSurface,
+    onPrimary = AzulColors.AzulLightOnPrimary,
     onSecondary = Color.Black,
     onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F)
+    onBackground = AzulColors.AzulLightOnBackground,
+    onSurface = AzulColors.AzulLightOnBackground
 )
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF64B5F6),
-    secondary = Color(0xFFFFF176),
-    tertiary = Color(0xFFEF5350),
-    background = Color(0xFF121212),
-    surface = Color(0xFF1E1E1E),
-    onPrimary = Color.Black,
+private val AzulDarkColorScheme = darkColorScheme(
+    primary = AzulColors.AzulDark,
+    secondary = AzulColors.YellowDark,
+    tertiary = AzulColors.RedDark,
+    background = AzulColors.AzulDarkBackground,
+    surface = AzulColors.AzulDarkSurface,
+    onPrimary = AzulColors.AzulDarkOnPrimary,
     onSecondary = Color.Black,
     onTertiary = Color.White,
-    onBackground = Color(0xFFE6E1E5),
-    onSurface = Color(0xFFE6E1E5)
+    onBackground = AzulColors.AzulDarkOnBackground,
+    onSurface = AzulColors.AzulDarkOnBackground
 )
 
+// ============ Esquemas de Color para Tema Guinda IPN ============
+
+private val GuindaLightColorScheme = lightColorScheme(
+    primary = GuindaColors.GuindaLight,
+    secondary = GuindaColors.YellowLight,
+    tertiary = GuindaColors.RedLight,
+    background = GuindaColors.GuindaLightBackground,
+    surface = GuindaColors.GuindaLightSurface,
+    onPrimary = GuindaColors.GuindaLightOnPrimary,
+    onSecondary = Color.Black,
+    onTertiary = Color.White,
+    onBackground = GuindaColors.GuindaLightOnBackground,
+    onSurface = GuindaColors.GuindaLightOnBackground
+)
+
+private val GuindaDarkColorScheme = darkColorScheme(
+    primary = GuindaColors.GuindaDark,
+    secondary = GuindaColors.YellowDark,
+    tertiary = GuindaColors.RedDark,
+    background = GuindaColors.GuindaDarkBackground,
+    surface = GuindaColors.GuindaDarkSurface,
+    onPrimary = GuindaColors.GuindaDarkOnPrimary,
+    onSecondary = Color.Black,
+    onTertiary = Color.White,
+    onBackground = GuindaColors.GuindaDarkOnBackground,
+    onSurface = GuindaColors.GuindaDarkOnBackground
+)
+
+/**
+ * Tema principal de Connect Four con soporte para múltiples temas y modos
+ */
 @Composable
 fun ConnectFourTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeType: ThemeType = ThemeType.AZUL_ESCOM,
+    colorMode: ColorMode = ColorMode.SYSTEM,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    // Determinar si usar modo oscuro
+    val useDarkTheme = when (colorMode) {
+        ColorMode.LIGHT -> false
+        ColorMode.DARK -> true
+        ColorMode.SYSTEM -> isSystemInDarkTheme()
+    }
+
+    // Seleccionar el esquema de color según el tema y el modo
+    val colorScheme = when (themeType) {
+        ThemeType.AZUL_ESCOM -> {
+            if (useDarkTheme) AzulDarkColorScheme else AzulLightColorScheme
+        }
+        ThemeType.GUINDA_IPN -> {
+            if (useDarkTheme) GuindaDarkColorScheme else GuindaLightColorScheme
+        }
+    }
 
     MaterialTheme(
         colorScheme = colorScheme,
