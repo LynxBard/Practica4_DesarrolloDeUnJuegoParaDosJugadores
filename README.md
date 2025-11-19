@@ -75,28 +75,42 @@ app/
 │   ├── GameMode.kt          # Enumeración de modos de juego
 │   ├── GameState.kt         # Estado del juego
 │   ├── Player.kt            # Representación de jugadores
-│   └── BoardTheme.kt        # Temas visuales
+│   ├── Cell.kt            # Representación del contenido de una celda
+│   ├── Move.kt            
+│   └── GameSaveData.kt        # Serializacion de datos para guardado de partidas
 ├── viewmodel/
 │   ├── GameViewModel.kt     # Lógica de juego principal
-│   ├── AIViewModel.kt       # Implementación de IA
-│   └── BluetoothViewModel.kt # Gestión de conexiones
+│   ├── NavigationViewModel.kt       # Navegacion entre pantallas
+│   └── BluetoothGameViewModel.kt  # Gestión de conexiones
+├── navigation/
+│   └── Screen.kt 
 ├── ui/
 │   ├── screens/
-│   │   ├── MenuScreen.kt    # Pantalla principal
+│   │   ├── MainMenuScreen.kt    # Pantalla principal
 │   │   ├── GameScreen.kt    # Pantalla de juego
+│   │   ├── AIConfigScreen.kt    
+│   │   ├── BluetoothGameScreen.kt    
+│   │   ├── GameModeSelectionScreen.kt  
+│   │   ├── LoadGameScreen.kt   
+│   │   ├── SaveGameScreen.kt   
+│   │   ├── MoveHistory.kt    
+│   │   ├── StatisticsScreen.kt    
 │   │   └── SettingsScreen.kt
-│   └── components/
-│       ├── GameBoard.kt     # Tablero de juego
-│       └── PlayerIndicator.kt
+│   └── theme/
+│       ├── Color.kt
+│       ├── Type.kt     
+│       ├── ThemeConfig.kt     
+│       └── Theme.kt
 ├── data/
-│   ├── repository/
-│   │   └── GameRepository.kt
-│   └── database/
-│       ├── GameDatabase.kt
-│       └── GameDao.kt
+│   ├── GameSaveRepository.kt
+│   ├── StatisticsRepository.kt
+│   └── ThemePreferencesRepository.kt
+├── domain/
+│   ├── GameLogic.kt
+│   └── ai/
+│       └── ConnectFourAI.kt
 └── bluetooth/
-    ├── BluetoothService.kt
-    └── BluetoothManager.kt
+    └── BluetoothGameService.kt
 ```
 
 ## 🧠 Algoritmo de IA
